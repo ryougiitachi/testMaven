@@ -53,6 +53,6 @@
 	
 	<modules>
 		<module>test-maven-gallery</module>
-    <module>test-maven-webserver</module>
-  </modules>
+		<module>test-maven-webserver</module>
+	</modules>
 </project>
