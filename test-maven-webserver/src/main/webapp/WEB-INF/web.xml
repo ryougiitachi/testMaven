@@ -27,7 +27,8 @@
 	
 	<servlet-mapping>
 		<servlet-name>TestServlet</servlet-name>
-		<url-pattern>/*</url-pattern>
+		<!-- easy for /* to stackoverflow. -->
+		<url-pattern>/test/*</url-pattern>
 	</servlet-mapping>
 	
 	<session-config>

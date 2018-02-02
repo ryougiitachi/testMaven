@@ -34,7 +34,8 @@ public class TestServlet extends HttpServlet {
 	@Override
 	public void service(ServletRequest req, ServletResponse res)
 			throws ServletException, IOException {
-		logger.debug("Servlet {} gets a new request {}. ", getClass().getSimpleName(), req);
+		HttpServletRequest request = (HttpServletRequest)req;
+		logger.debug("Servlet {} gets a new {} request {}. ", getClass().getSimpleName(), request.getMethod(), req);
 		super.service(req, res);
 	}
 
