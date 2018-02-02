@@ -162,6 +162,71 @@ public class GalleryUtils {
 		}
 	}
 	
+	public static String loadFileByURL(String urlLink, Map<String, String> headers, byte[] buffer, String dir, StringBuilder builder) {
+		String strFilePath = GalleryUtils.joinStrings(builder, dir, getFileNameViaUrl(urlLink));
+		URL url = null;
+		HttpURLConnection connection = null;
+		InputStream is = null;
+		OutputStream os = null;
+		int count = 0;
+		boolean isSuccessful = false;
+		try {
+			url = new URL(urlLink);
+			connection = (HttpURLConnection)url.openConnection(Proxy.NO_PROXY);
+			connection.setRequestMethod(GalleryConstants.HTTP_METHOD_GET);
+			connection.setRequestProperty(GalleryConstants.HTTP_HEADER_USER_AGENT, headers.get(GalleryConstants.HTTP_HEADER_USER_AGENT));
+			connection.setRequestProperty(GalleryConstants.HTTP_HEADER_ACCEPT, headers.get(GalleryConstants.HTTP_HEADER_ACCEPT));
+			connection.setRequestProperty(GalleryConstants.HTTP_HEADER_ACCEPT_ENCODING, headers.get(GalleryConstants.HTTP_HEADER_ACCEPT_ENCODING));
+			connection.setRequestProperty(GalleryConstants.HTTP_HEADER_CACHE_CONTROL, headers.get(GalleryConstants.HTTP_HEADER_CACHE_CONTROL));
+			connection.connect();
+			logResponseHeaders(connection);
+			is = connection.getInputStream();
+			os = new BufferedOutputStream(new FileOutputStream(strFilePath));
+			while ((count = is.read(buffer)) > 0) {
+				os.write(buffer, 0, count);
+			}
+			isSuccessful = true;
+		} 
+		catch (MalformedURLException e) {
+			logger.error(e.getMessage(), e);
+			isSuccessful = false;
+		}
+		catch (IOException e) {
+			logger.error(e.getMessage(), e);
+			isSuccessful = false;
+		}
+		finally {
+			if (is != null) {
+				try {
+					is.close();
+					is = null;
+				} 
+				catch (IOException e) {
+					logger.error(e.getMessage(), e);
+				}
+			}
+			if (os != null) {
+				try {
+					os.close();
+					os = null;
+				} 
+				catch (IOException e) {
+					logger.error(e.getMessage(), e);
+				}
+			}
+			if (connection != null) {
+				connection.disconnect();
+				connection = null;
+			}
+		}
+		if (isSuccessful) {
+			return strFilePath;
+		} 
+		else {
+			return null;
+		}
+	}
+	
 	private static void logResponseHeaders(URLConnection connection) {
 		Map<String, List<String>> mapHeader = connection.getHeaderFields();
 		for (String key : mapHeader.keySet()) {
@@ -245,6 +310,11 @@ public class GalleryUtils {
 			String strCurrPath = currUrl.substring(0, currUrl.lastIndexOf("/") + 1);
 			return joinStrings(builder, strCurrPath, urlPath);
 		}
+	}
+	
+	public static String getFileNameViaUrl(String urlLink) {
+		String strFileName = urlLink.substring(urlLink.lastIndexOf("/") + 1);
+		return strFileName;
 	}
 	
 	public static void testFinal() {

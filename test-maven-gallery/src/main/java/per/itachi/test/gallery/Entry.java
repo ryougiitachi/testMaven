@@ -3,7 +3,8 @@ package per.itachi.test.gallery;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import per.itachi.test.gallery.util.GalleryUtils;
+import per.itachi.test.gallery.parser.NineSixxxNetParser;
+import per.itachi.test.gallery.parser.Parser;
 
 public class Entry {
 	
@@ -13,10 +14,8 @@ public class Entry {
 		if (args.length <= 0) {
 			return;
 		}
-		String strWebLink = args[0];
-//		String strHtmlPath = loadHtmlByURL(strWebLink);
-		String strBaseUrl = GalleryUtils.getBaseUrl(strWebLink);
-		logger.debug("{}", strBaseUrl);
+		Parser nineSixxxNet = new NineSixxxNetParser(args[0]);
+		nineSixxxNet.execute();
 	}
 
 }
