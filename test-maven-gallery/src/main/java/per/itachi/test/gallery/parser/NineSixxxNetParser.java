@@ -27,7 +27,7 @@ public class NineSixxxNetParser implements Parser {
 	private static final String SELECTOR_TITLE = 
 			"section.container div.content-wrap div.content header.article-header h1.article-title";
 	private static final String SELECTOR_INTRODUCTION = 
-			"section.container div.content-wrap div.content article.article-content p:eq(0)";
+			"section.container div.content-wrap div.content article.article-content p";
 	private static final String SELECTOR_NEXT_PAGE = 
 			"section.container div.content-wrap div.content div.pagination.pagination-multi ul li.next-page a";
 	private static final String SELECTOR_IMG = 
@@ -60,9 +60,11 @@ public class NineSixxxNetParser implements Parser {
 			page.setTmpFilePath(strTmpHtmlPath);
 			listTmpFilePath.add(page);
 			strPicDirPath = generatePicDirectory(strTmpHtmlPath);
-			loadTmpHtmlList(strTmpHtmlPath, listTmpFilePath, mapHeaders);// download html
-			loadImageLinkList(listTmpFilePath, listImageLink);// load image links
-			downloadImages(listImageLink, mapHeaders, strPicDirPath);//download imagaes
+			if (strPicDirPath != null) {
+				loadTmpHtmlList(strTmpHtmlPath, listTmpFilePath, mapHeaders);// download html
+				loadImageLinkList(listTmpFilePath, listImageLink);// load image links
+				downloadImages(listImageLink, mapHeaders, strPicDirPath);//download imagaes
+			}
 		} 
 		catch (IOException e) {
 			logger.error(e.getMessage(), e);
@@ -80,18 +82,25 @@ public class NineSixxxNetParser implements Parser {
 				GalleryConstants.DEFAULT_PICTURE_PATH, File.separator, 
 				strTitle, File.separator);
 		File filePicDirPath = new File(strPicDirPath);
+		if (filePicDirPath.exists()) {
+			logger.info("{} has been downloaded before", this.urlLink);
+			return null;
+		}
 		filePicDirPath.mkdir();
-		Element elementArticle = document.selectFirst(SELECTOR_INTRODUCTION);
-		if (elementArticle != null) {
-			String strArticle = elementArticle.text();
-			String strIntroFilePath = GalleryUtils.joinStrings(builder, strPicDirPath, "readme.txt");
-			File fileIntro = new File(strIntroFilePath);
-			try(PrintWriter pw = new PrintWriter(fileIntro)) {
-				pw.println(strArticle);
-			} 
-			catch (FileNotFoundException e) {
-				logger.error(e.getMessage(), e);
+		Elements elementsArticle = document.select(SELECTOR_INTRODUCTION);
+		String strIntroFilePath = GalleryUtils.joinStrings(builder, strPicDirPath, "readme.txt");
+		File fileIntro = new File(strIntroFilePath);
+		try(PrintWriter pw = new PrintWriter(fileIntro)) {
+			pw.println(this.urlLink);
+			pw.println();
+			for (Element elementArticle : elementsArticle) {
+				if (elementArticle.hasText()) {
+					pw.println(elementArticle.text());
+				}
 			}
+		} 
+		catch (FileNotFoundException e) {
+			logger.error(e.getMessage(), e);
 		}
 		return strPicDirPath;
 	}
@@ -124,7 +133,7 @@ public class NineSixxxNetParser implements Parser {
 			page.setTmpFilePath(strTmpFilePath);
 			tmpFilePaths.add(page);
 			try {
-				lInterval = random.nextInt(1000) + 1000;
+				lInterval = random.nextInt(500) + 1000;
 				logger.info("The current thread will sleep {} milliseconds.", lInterval);
 				Thread.sleep(lInterval);
 			} 
@@ -168,8 +177,9 @@ public class NineSixxxNetParser implements Parser {
 			fileImg = new File(strImgPath);
 			strFixedPath = String.format("%s%05d-%s", picPath, i, fileImg.getName());
 			fileImg.renameTo(new File(strFixedPath));
+			logger.info("{}/{} image files have been downloaded.", i, imageLinks.size());
 			try {
-				lInterval = random.nextInt(500) + 500;
+				lInterval = random.nextInt(350) + 300;
 				logger.info("The current thread will sleep {} milliseconds.", lInterval);
 				Thread.sleep(lInterval);
 			} 
