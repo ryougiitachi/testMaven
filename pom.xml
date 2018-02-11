@@ -15,6 +15,7 @@
 		<logback.version>1.2.3</logback.version>
 		<jsoup.version>1.11.2</jsoup.version>
 		<javax.version>7.0</javax.version>
+		<jackcess.version>2.1.9</jackcess.version>
 	</properties>
 	
 	<dependencyManagement>
@@ -47,6 +48,12 @@
 				<groupId>javax</groupId>
 				<artifactId>javaee-api</artifactId>
 				<version>${javax.version}</version>
+			</dependency>
+			<!-- jackcess -->
+			<dependency>
+				<groupId>com.healthmarketscience.jackcess</groupId>
+				<artifactId>jackcess</artifactId>
+				<version>${jackcess.version}</version>
 			</dependency>
 		</dependencies>
 	</dependencyManagement>

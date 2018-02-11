@@ -31,5 +31,10 @@
 			<groupId>org.jsoup</groupId>
 			<artifactId>jsoup</artifactId>
 		</dependency>
+		<!-- jackcess -->
+<!-- 		<dependency> -->
+<!-- 			<groupId>com.healthmarketscience.jackcess</groupId> -->
+<!-- 			<artifactId>jackcess</artifactId> -->
+<!-- 		</dependency> -->
 	</dependencies>
 </project>
