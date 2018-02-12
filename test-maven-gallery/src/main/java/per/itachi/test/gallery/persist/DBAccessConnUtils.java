@@ -9,6 +9,7 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.Properties;
 
+import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -19,16 +20,16 @@ public class DBAccessConnUtils {
 	private static final Logger logger =LoggerFactory.getLogger(DBAccessConnUtils.class);
 	
 	private static final String SQL_GET_HIS_BY_LINK = 
-			"SELECT ID, GALLERY_LINK, WEBSITE, STATUS, CEATOR, CDATE FROM T_GALLERY_HISTORY WHERE GALLERY_LINK = ?";
+			"SELECT ID, GALLERY_LINK, WEBSITE, TITLE, STATUS, CEATOR, CDATE, EDITOR, EDATE FROM T_GALLERY_HISTORY WHERE GALLERY_LINK = ?";
 	
 	private static final String SQL_INS_HIS = 
-			"INSERT INTO T_GALLERY_HISTORY(GALLERY_LINK, WEBSITE, STATUS, CEATOR, CDATE) VALUES(?, ?, ?, ?, ?)";
+			"INSERT INTO T_GALLERY_HISTORY(GALLERY_LINK, WEBSITE, TITLE, STATUS, CEATOR, CDATE, EDITOR, EDATE) VALUES(?, ?, ?, ?, ?, ?, ?, ?)";
 	
 	private static final String SQL_UPD_HIS_BY_ID = 
-			"UPDATE T_GALLERY_HISTORY SET STATUS = ? WHERE ID = ?";
+			"UPDATE T_GALLERY_HISTORY SET STATUS = ?, EDITOR = ?, EDATE = ? WHERE ID = ?";
 	
 	private static final String SQL_UPD_HIS_BY_LINK = 
-			"UPDATE T_GALLERY_HISTORY SET STATUS = ? WHERE GALLERY_LINK = ?";
+			"UPDATE T_GALLERY_HISTORY SET STATUS = ?, EDITOR = ?, EDATE = ? WHERE GALLERY_LINK = ?";
 	
 	private static Connection connection = null;
 	
@@ -51,11 +52,15 @@ public class DBAccessConnUtils {
 		ResultSet rs = statement.executeQuery();
 		if (rs.next()) {
 			GalleryHistory history = new GalleryHistory();
-			history.setId(rs.getInt("ID"));
-			history.setGalleryLink(rs.getString("GALLERY_LINK"));
-			history.setStatus(rs.getInt("STATUS"));
-			history.setCreator(rs.getString("CEATOR"));
-			history.setCdate(rs.getDate("CDATE"));
+			history.setId(rs.getInt(GalleryHistory.COL_NAME_ID));
+			history.setGalleryLink(rs.getString(GalleryHistory.COL_NAME_GALLERY_LINK));
+			history.setWebsite(rs.getString(GalleryHistory.COL_NAME_WEBSITE));
+			history.setTitle(rs.getString(GalleryHistory.COL_NAME_TITLE));
+			history.setStatus(rs.getInt(GalleryHistory.COL_NAME_STATUS));
+			history.setCreator(rs.getString(GalleryHistory.COL_NAME_CREATOR));
+			history.setCdate(rs.getDate(GalleryHistory.COL_NAME_CDATE));
+			history.setEditor(rs.getString(GalleryHistory.COL_NAME_EDITOR));
+			history.setEdate(rs.getDate(GalleryHistory.COL_NAME_EDATE));
 			return history;
 		}
 		else {
@@ -67,13 +72,18 @@ public class DBAccessConnUtils {
 		PreparedStatement statement = null;
 		ResultSet rs = null;
 		int id;
+		Date dateTime = null;
 		try {
+			dateTime = new Date(history.getCdate().getTime());
 			statement = connection.prepareStatement(SQL_INS_HIS, Statement.RETURN_GENERATED_KEYS);
 			statement.setString(1, history.getGalleryLink());
-			statement.setString(2, "");
-			statement.setInt(3, history.getStatus());
-			statement.setString(4, history.getCreator());
-			statement.setDate(5, new Date(history.getCdate().getTime()));
+			statement.setString(2, history.getWebsite());
+			statement.setString(3, history.getTitle());
+			statement.setInt(4, history.getStatus());
+			statement.setString(5, DBConstants.DEFAULT_OPERATOR);	//creator
+			statement.setDate(6, dateTime);							//cdate
+			statement.setString(7, DBConstants.DEFAULT_OPERATOR);	//editor
+			statement.setDate(8, dateTime);							//edate
 			int iResult = statement.executeUpdate();
 			rs = statement.getGeneratedKeys();
 			if (iResult >= 1 && rs.next()) {
@@ -100,9 +110,13 @@ public class DBAccessConnUtils {
 	}
 	
 	public static int updateGalleryHistoryByID(GalleryHistory history) throws SQLException {
+		Date dateTime = null;
 		try(PreparedStatement statement = connection.prepareStatement(SQL_UPD_HIS_BY_ID);) {
+			dateTime = new Date(history.getEdate().getTime());
 			statement.setInt(1, history.getStatus());
-			statement.setInt(2, history.getId());
+			statement.setString(2, history.getEditor());
+			statement.setDate(3, dateTime);
+			statement.setInt(4, history.getId());
 			int iResult = statement.executeUpdate();
 			commited = false;
 			return iResult;
@@ -110,9 +124,13 @@ public class DBAccessConnUtils {
 	}
 	
 	public static int updateGalleryHistoryByLink(GalleryHistory history) throws SQLException {
+		Date dateTime = null;
 		try(PreparedStatement statement = connection.prepareStatement(SQL_UPD_HIS_BY_LINK);) {
+			dateTime = new Date(history.getEdate().getTime());
 			statement.setInt(1, history.getStatus());
-			statement.setString(2, history.getGalleryLink());
+			statement.setString(2, history.getEditor());
+			statement.setDate(3, dateTime);
+			statement.setString(4, history.getGalleryLink());
 			int iResult = statement.executeUpdate();
 			commited = false;
 			return iResult;

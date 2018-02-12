@@ -52,11 +52,11 @@ public class Entry {
 		if (exit) {
 			return;
 		}
-//		Parser nineSixxxNet = new NineSixxxNetParser(strLink);
-//		nineSixxxNet.execute();
+		Parser nineSixxxNet = new NineSixxxNetParser(strLink);
+		nineSixxxNet.execute();
 		try {
 			DBAccessConnUtils.connect();
-//			history.setTitle(nineSixxxNet.getTitle());
+			history.setTitle(nineSixxxNet.getTitle());
 			history.setStatus(2);
 			DBAccessConnUtils.updateGalleryHistoryByID(history);
 			logger.info("Completed downloading {}", strLink);

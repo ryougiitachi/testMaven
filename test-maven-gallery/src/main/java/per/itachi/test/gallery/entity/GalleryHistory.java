@@ -10,6 +10,8 @@ public class GalleryHistory {
 	
 	public static final String COL_NAME_WEBSITE = "WEBSITE";
 	
+	public static final String COL_NAME_TITLE = "TITLE";
+	
 	public static final String COL_NAME_STATUS = "STATUS";
 	
 	public static final String COL_NAME_CREATOR = "CREATOR";
