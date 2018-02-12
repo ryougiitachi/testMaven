@@ -39,6 +39,8 @@ public class NineSixxxNetParser implements Parser {
 	
 	private String baseUrl;
 	
+	private String title;
+	
 	public NineSixxxNetParser(String urlLink) {
 		this.urlLink = urlLink;
 		this.baseUrl = GalleryUtils.getBaseUrl(urlLink);
@@ -77,7 +79,7 @@ public class NineSixxxNetParser implements Parser {
 		File fileTmpHtmlPath = new File(tmpHtmlPath);
 		Document document = Jsoup.parse(fileTmpHtmlPath, WEBSITE_CHARSET);
 		Element elementTitle = document.selectFirst(SELECTOR_TITLE);
-		String strTitle = elementTitle.text();
+		String strTitle = this.title = elementTitle.text();
 		String strPicDirPath = GalleryUtils.joinStrings(builder, 
 				GalleryConstants.DEFAULT_PICTURE_PATH, File.separator, 
 				strTitle, File.separator);
@@ -188,5 +190,10 @@ public class NineSixxxNetParser implements Parser {
 			}
 		}
 		logger.info("Finish downloading images.");
+	}
+
+	@Override
+	public String getTitle() {
+		return this.title;
 	}
 }

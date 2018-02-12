@@ -61,4 +61,8 @@ public class NeteaseParser implements Parser {
 		}
 	}
 
+	@Override
+	public String getTitle() {
+		return null;
+	}
 }

@@ -32,9 +32,19 @@
 			<artifactId>jsoup</artifactId>
 		</dependency>
 		<!-- jackcess -->
-<!-- 		<dependency> -->
-<!-- 			<groupId>com.healthmarketscience.jackcess</groupId> -->
-<!-- 			<artifactId>jackcess</artifactId> -->
-<!-- 		</dependency> -->
+		<dependency>
+			<groupId>com.healthmarketscience.jackcess</groupId>
+			<artifactId>jackcess</artifactId>
+		</dependency>
+		<!-- jackcess-encrypt -->
+		<dependency>
+			<groupId>com.healthmarketscience.jackcess</groupId>
+			<artifactId>jackcess-encrypt</artifactId>
+		</dependency>
+		<!-- UCanAccess -->
+		<dependency>
+			<groupId>net.sf.ucanaccess</groupId>
+			<artifactId>ucanaccess</artifactId>
+		</dependency>
 	</dependencies>
 </project>
