@@ -9,7 +9,6 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.Properties;
 
-import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -20,10 +19,10 @@ public class DBAccessConnUtils {
 	private static final Logger logger =LoggerFactory.getLogger(DBAccessConnUtils.class);
 	
 	private static final String SQL_GET_HIS_BY_LINK = 
-			"SELECT ID, GALLERY_LINK, WEBSITE, TITLE, STATUS, CEATOR, CDATE, EDITOR, EDATE FROM T_GALLERY_HISTORY WHERE GALLERY_LINK = ?";
+			"SELECT ID, GALLERY_LINK, WEBSITE, TITLE, STATUS, CREATOR, CDATE, EDITOR, EDATE FROM T_GALLERY_HISTORY WHERE GALLERY_LINK = ?";
 	
 	private static final String SQL_INS_HIS = 
-			"INSERT INTO T_GALLERY_HISTORY(GALLERY_LINK, WEBSITE, TITLE, STATUS, CEATOR, CDATE, EDITOR, EDATE) VALUES(?, ?, ?, ?, ?, ?, ?, ?)";
+			"INSERT INTO T_GALLERY_HISTORY(GALLERY_LINK, WEBSITE, TITLE, STATUS, CREATOR, CDATE, EDITOR, EDATE) VALUES(?, ?, ?, ?, ?, ?, ?, ?)";
 	
 	private static final String SQL_UPD_HIS_BY_ID = 
 			"UPDATE T_GALLERY_HISTORY SET STATUS = ?, EDITOR = ?, EDATE = ? WHERE ID = ?";
