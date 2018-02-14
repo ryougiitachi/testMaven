@@ -30,7 +30,7 @@ public class Entry {
 			DBAccessConnUtils.connect();
 			history = DBAccessConnUtils.getGalleryHistoryByLink(strLink);
 			if (history != null) {
-				logger.info("{} has been downloaded before.", strLink);
+				logger.info("{} has been downloaded before, {}.", strLink, history.getTitle());
 				exit = true;
 			}
 			else {
@@ -59,7 +59,7 @@ public class Entry {
 			history.setTitle(nineSixxxNet.getTitle());
 			history.setStatus(2);
 			DBAccessConnUtils.updateGalleryHistoryByID(history);
-			logger.info("Completed downloading {}", strLink);
+			logger.info("Completed downloading {}, {}", strLink, history.getTitle());
 		} 
 		catch (ClassNotFoundException | SQLException e) {
 			logger.error("Error occurs when updating history record {}. ", strLink, e);
