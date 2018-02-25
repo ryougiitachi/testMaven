@@ -26,6 +26,8 @@ public class NineSixxxNetParser implements Parser {
 	
 	private static final String SELECTOR_TITLE = 
 			"section.container div.content-wrap div.content header.article-header h1.article-title";
+	private static final String SELECTOR_PUBLISH_DATE = 
+			"section.container div.content-wrap div.content header.article-header ul.article-meta>li";
 	private static final String SELECTOR_INTRODUCTION = 
 			"section.container div.content-wrap div.content article.article-content p";
 	private static final String SELECTOR_NEXT_PAGE = 
@@ -89,12 +91,17 @@ public class NineSixxxNetParser implements Parser {
 			return null;
 		}
 		filePicDirPath.mkdir();
+		Elements elementsPublishDate = document.select(SELECTOR_PUBLISH_DATE);
 		Elements elementsArticle = document.select(SELECTOR_INTRODUCTION);
 		String strIntroFilePath = GalleryUtils.joinStrings(builder, strPicDirPath, "readme.txt");
 		File fileIntro = new File(strIntroFilePath);
 		try(PrintWriter pw = new PrintWriter(fileIntro)) {
 			pw.println(this.urlLink);
 			pw.println();
+			if (elementsPublishDate.size() > 0) {
+				pw.println(elementsPublishDate.get(0).text());
+				pw.println();
+			}
 			for (Element elementArticle : elementsArticle) {
 				if (elementArticle.hasText()) {
 					pw.println(elementArticle.text());

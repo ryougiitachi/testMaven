@@ -25,7 +25,7 @@ public class DBAccessConnUtils {
 			"INSERT INTO T_GALLERY_HISTORY(GALLERY_LINK, WEBSITE, TITLE, STATUS, CREATOR, CDATE, EDITOR, EDATE) VALUES(?, ?, ?, ?, ?, ?, ?, ?)";
 	
 	private static final String SQL_UPD_HIS_BY_ID = 
-			"UPDATE T_GALLERY_HISTORY SET STATUS = ?, EDITOR = ?, EDATE = ? WHERE ID = ?";
+			"UPDATE T_GALLERY_HISTORY SET TITLE = ?, STATUS = ?, EDITOR = ?, EDATE = ? WHERE ID = ?";
 	
 	private static final String SQL_UPD_HIS_BY_LINK = 
 			"UPDATE T_GALLERY_HISTORY SET STATUS = ?, EDITOR = ?, EDATE = ? WHERE GALLERY_LINK = ?";
@@ -112,10 +112,11 @@ public class DBAccessConnUtils {
 		Date dateTime = null;
 		try(PreparedStatement statement = connection.prepareStatement(SQL_UPD_HIS_BY_ID);) {
 			dateTime = new Date(history.getEdate().getTime());
-			statement.setInt(1, history.getStatus());
-			statement.setString(2, history.getEditor());
-			statement.setDate(3, dateTime);
-			statement.setInt(4, history.getId());
+			statement.setString(1, history.getTitle());
+			statement.setInt(2, history.getStatus());
+			statement.setString(3, history.getEditor());
+			statement.setDate(4, dateTime);
+			statement.setInt(5, history.getId());
 			int iResult = statement.executeUpdate();
 			commited = false;
 			return iResult;
