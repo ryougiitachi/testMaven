@@ -19,6 +19,7 @@
 		<jackcess.encrypt.version>2.1.3</jackcess.encrypt.version>
 		<ucanaccess.version>4.0.3</ucanaccess.version>
 		<apache.taglibs.version>1.2.5</apache.taglibs.version>
+		<apache.poi.version>3.17</apache.poi.version>
 	</properties>
 	
 	<dependencyManagement>
@@ -91,11 +92,18 @@
 				<artifactId>taglibs-standard-jstlel</artifactId>
 				<version>${apache.taglibs.version}</version>
 			</dependency>
+			<!-- poi -->
+			<dependency>
+				<groupId>org.apache.poi</groupId>
+				<artifactId>poi-ooxml</artifactId>
+				<version>${apache.poi.version}</version>
+			</dependency>
 		</dependencies>
 	</dependencyManagement>
 	
 	<modules>
 		<module>test-maven-gallery</module>
 		<module>test-maven-webserver</module>
+		<module>test-maven-poi</module>
 	</modules>
 </project>
