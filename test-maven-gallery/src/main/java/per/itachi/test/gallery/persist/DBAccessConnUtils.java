@@ -159,4 +159,21 @@ public class DBAccessConnUtils {
 		}
 	}
 	
+	public static void main(String[] args) {
+		if (args.length <= 0) {
+			logger.info("No website link found.");
+			return;
+		}
+		try {
+			connect();
+			DBAccessConnUtils.getGalleryHistoryByLink(args[0]);
+		} 
+		catch (ClassNotFoundException | SQLException e) {
+			logger.error(e.getMessage(), e);
+		}
+		finally {
+			close();
+		}
+	}
+	
 }
