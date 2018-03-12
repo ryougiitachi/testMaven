@@ -19,6 +19,7 @@ import org.slf4j.LoggerFactory;
 import per.itachi.test.gallery.GalleryConstants;
 import per.itachi.test.gallery.entity.NineSixxxNetPage;
 import per.itachi.test.gallery.util.GalleryUtils;
+import per.itachi.test.gallery.util.WebUtils;
 
 public class NineSixxxNetParser implements Parser {
 	
@@ -45,7 +46,7 @@ public class NineSixxxNetParser implements Parser {
 	
 	public NineSixxxNetParser(String urlLink) {
 		this.urlLink = urlLink;
-		this.baseUrl = GalleryUtils.getBaseUrl(urlLink);
+		this.baseUrl = WebUtils.getBaseUrl(urlLink);
 	}
 
 	@Override
@@ -132,7 +133,7 @@ public class NineSixxxNetParser implements Parser {
 				elementsNextPage.size() > 0;
 				elementsNextPage = document.select(SELECTOR_NEXT_PAGE)) {
 			elementNextPage = elementsNextPage.first();
-			strNextLink = GalleryUtils.getCompleteUrlLink(builder, elementNextPage.attr("href"), this.baseUrl, strCurrUrl);
+			strNextLink = WebUtils.getCompleteUrlLink(builder, elementNextPage.attr("href"), this.baseUrl, strCurrUrl);
 			strTmpFilePath = GalleryUtils.loadHtmlByURL(strNextLink, headers);
 			fileTmpHtmlPath = new File(strTmpFilePath);
 			document = Jsoup.parse(fileTmpHtmlPath, "UTF-8");
@@ -164,7 +165,7 @@ public class NineSixxxNetParser implements Parser {
 			document = Jsoup.parse(fileTmpHtmlPath, WEBSITE_CHARSET);
 			elementsImg = document.select(SELECTOR_IMG);
 			for (Element elementImg : elementsImg) {
-				imageLinks.add(GalleryUtils.getCompleteUrlLink(builder, elementImg.attr("src"), this.baseUrl, page.getCurrUrlLink()));
+				imageLinks.add(WebUtils.getCompleteUrlLink(builder, elementImg.attr("src"), this.baseUrl, page.getCurrUrlLink()));
 			}
 		}
 		logger.info("Finish filling list of image link.");

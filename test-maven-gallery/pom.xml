@@ -47,5 +47,11 @@
 			<groupId>net.sf.ucanaccess</groupId>
 			<artifactId>ucanaccess</artifactId>
 		</dependency>
+		<!-- digester -->
+		<dependency>
+			<groupId>org.apache.commons</groupId>
+			<artifactId>commons-digester3</artifactId>
+			<classifier>with-deps</classifier>
+		</dependency>
 	</dependencies>
 </project>
