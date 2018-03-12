@@ -19,4 +19,11 @@ public class GalleryConstants {
 	
 	public static final String DEFAULT_HTML_PATH = "html";
 	public static final String DEFAULT_PICTURE_PATH = "pic";
+	
+	public static final String DEFAULT_WEBSITE_CONF_PATH = "conf/websites.xml";
+	
+	public static final int PASER_STATUS_INITIAL = 0;
+	public static final int PASER_STATUS_PROCESSING = 1;
+	public static final int PASER_STATUS_COMPLETED = 2;
+	public static final int PASER_STATUS_FAILED = 3;
 }

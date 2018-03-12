@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<websites>
+	<website>
+		<id></id>
+		<name></name>
+		<parser-class-name></parser-class-name>
+		<domains>
+			<value></value>
+			<value></value>
+		</domains>
+	</website>
+</websites>

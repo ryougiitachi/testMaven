@@ -8,7 +8,13 @@ public class GalleryHistory {
 	
 	public static final String COL_NAME_GALLERY_LINK = "GALLERY_LINK";
 	
+	public static final String COL_NAME_BASE_URL = "BASE_URL";
+	
+	public static final String COL_NAME_WEB_PATH = "WEB_PATH";
+	
 	public static final String COL_NAME_WEBSITE = "WEBSITE";
+	
+	public static final String COL_NAME_WEBSITE_ID = "WEBSITE_ID";
 	
 	public static final String COL_NAME_TITLE = "TITLE";
 	
@@ -26,7 +32,13 @@ public class GalleryHistory {
 	
 	private String galleryLink;
 	
+	private String baseUrl;
+	
+	private String webPath;
+	
 	private String website;
+	
+	private int websiteID;
 	
 	private String title;
 	
@@ -56,12 +68,36 @@ public class GalleryHistory {
 		this.galleryLink = galleryLink;
 	}
 
+	public String getBaseUrl() {
+		return baseUrl;
+	}
+
+	public void setBaseUrl(String baseUrl) {
+		this.baseUrl = baseUrl;
+	}
+
+	public String getWebPath() {
+		return webPath;
+	}
+
+	public void setWebPath(String webPath) {
+		this.webPath = webPath;
+	}
+
 	public String getWebsite() {
 		return website;
 	}
 
 	public void setWebsite(String website) {
 		this.website = website;
+	}
+
+	public int getWebsiteID() {
+		return websiteID;
+	}
+
+	public void setWebsiteID(int websiteID) {
+		this.websiteID = websiteID;
 	}
 
 	public String getTitle() {
@@ -118,4 +154,5 @@ public class GalleryHistory {
 				+ ", status=" + status + ", creator=" + creator + ", cdate=" + cdate + ", editor=" + editor + ", edate="
 				+ edate + "]";
 	}
+
 }

@@ -12,27 +12,24 @@ import java.net.MalformedURLException;
 import java.net.Proxy;
 import java.net.URL;
 import java.net.URLConnection;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 import java.util.zip.GZIPInputStream;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import per.itachi.test.gallery.GalleryConstants;
+import per.itachi.test.gallery.entity.GalleryHistory;
+import per.itachi.test.gallery.persist.DBConstants;
 
 public class GalleryUtils {
 	
 	private static final Logger logger = LoggerFactory.getLogger(GalleryUtils.class);
 	
 	public static final String EMPTY_STRING = "";
-	
-	public static final String REGEX_WEBSITE_LINK = "(https?://[\\w-]+(\\.[\\w-]+)*(:\\d+)?)(/[\\w-\\.]+)*";
-	
-//	public static final Pattern REGEX_WEBSITE_LINK = Pattern.compile("(https?://[\\w-]+(\\.[\\w-]+)+)(/[\\w-\\.]+)+");
 	
 	public static String joinStrings(StringBuilder builder, Object... args) {
 		if (builder == null || args == null) {
@@ -285,36 +282,23 @@ public class GalleryUtils {
 		return strUncompressTmpFilePath;
 	}
 	
-	public static String getBaseUrl(String urlPath) {
-		Pattern pattern = Pattern.compile(REGEX_WEBSITE_LINK);
-		Matcher matcher = pattern.matcher(urlPath);
-		String strBaseUrl = null;
-		if (matcher.find()) {
-			strBaseUrl = matcher.group(1);
-		}
-		return strBaseUrl;
-	}
-	
-	public static boolean isCompleteUrlLink(String urlPath) {
-		return Pattern.matches(REGEX_WEBSITE_LINK, urlPath);
-	}
-	
-	public static String getCompleteUrlLink(StringBuilder builder, String urlPath, String baseUrl, String currUrl) {
-		if (isCompleteUrlLink(urlPath)) {
-			return urlPath;
-		} 
-		else if (urlPath.startsWith("/")) {
-			return joinStrings(builder, baseUrl, urlPath);
-		}
-		else {
-			String strCurrPath = currUrl.substring(0, currUrl.lastIndexOf("/") + 1);
-			return joinStrings(builder, strCurrPath, urlPath);
-		}
-	}
-	
 	public static String getFileNameViaUrl(String urlLink) {
 		String strFileName = urlLink.substring(urlLink.lastIndexOf("/") + 1);
 		return strFileName;
+	}
+	
+	public static GalleryHistory getNewGalleryHistory(String baseUrl, String webPath, int websiteID) {
+		GalleryHistory history = new GalleryHistory();
+		Date date = new Date();
+		history.setBaseUrl(baseUrl);
+		history.setWebPath(webPath);
+		history.setWebsiteID(websiteID);
+		history.setStatus(GalleryConstants.PASER_STATUS_INITIAL);//0-initial 1-processing 2-completed 3-failed
+		history.setCreator(DBConstants.DEFAULT_OPERATOR);
+		history.setCdate(date);
+		history.setEditor(DBConstants.DEFAULT_OPERATOR);
+		history.setEdate(date);
+		return history;
 	}
 	
 	public static void testFinal() {

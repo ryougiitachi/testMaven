@@ -14,6 +14,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import per.itachi.test.gallery.util.GalleryUtils;
+import per.itachi.test.gallery.util.WebUtils;
 
 public class NeteaseParser implements Parser {
 	
@@ -28,7 +29,7 @@ public class NeteaseParser implements Parser {
 	
 	public NeteaseParser(String urlLink) {
 		this.urlLink = urlLink;
-		this.baseUrl = GalleryUtils.getBaseUrl(urlLink);
+		this.baseUrl = WebUtils.getBaseUrl(urlLink);
 	}
 	
 	@Override
@@ -57,7 +58,7 @@ public class NeteaseParser implements Parser {
 		for(elementsNextPage = document.select(SELECTOR_NEXT_PAGE); elementsNextPage.size() > 0;
 				elementsNextPage = document.select(SELECTOR_NEXT_PAGE)) {
 			elementNextPage = elementsNextPage.first();
-			strNextPageLink = GalleryUtils.getCompleteUrlLink(builder, elementNextPage.attr("href"), this.baseUrl, strCurrUrl);
+			strNextPageLink = WebUtils.getCompleteUrlLink(builder, elementNextPage.attr("href"), this.baseUrl, strCurrUrl);
 		}
 	}
 
