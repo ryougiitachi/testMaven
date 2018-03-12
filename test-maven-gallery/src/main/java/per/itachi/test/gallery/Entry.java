@@ -46,7 +46,7 @@ public class Entry {
 		GalleryHistory history = null;
 		try {
 			DBAccessConnUtils.connect();
-			history = DBAccessConnUtils.getGalleryHistoryByLink(strLink);
+			history = DBAccessConnUtils.getGalleryHistoryByWebPath(strWebPath, website.getId());
 			if (history != null) {
 				logger.info("{} has been downloaded before, {}.", strLink, history.getTitle());
 				exit = true;

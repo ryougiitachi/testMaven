@@ -214,15 +214,44 @@ public class DBAccessConnUtils {
 			logger.info("No website link found.");
 			return;
 		}
+		Connection connection = null;
+		PreparedStatement statement = null;
 		try {
-			connect();
-			DBAccessConnUtils.getGalleryHistoryByLink(args[0]);
+			Class.forName(DBConstants.ACCESS_UCANACCESS_CLASS);
+			Properties properties = new Properties();
+//			properties.put("password", DBConstants.ACCESS_PASSWORD);
+//			properties.put("jackcessOpener", "per.itachi.test.gallery.persist.GalleryJackcessOpener");
+//			properties.put("newDatabaseVersion", "V2010");
+//			properties.put("charset", "GBK");
+			connection = DriverManager.getConnection("jdbc:ucanaccess://data/Database3.accdb", properties);
+			connection.setAutoCommit(false);
+			statement = connection.prepareStatement("INSERT INTO T_TESTING(URL) VALUES(?)");
+			statement.setString(1, "a");
+			statement.executeUpdate();
+			connection.commit();
 		} 
 		catch (ClassNotFoundException | SQLException e) {
 			logger.error(e.getMessage(), e);
 		}
 		finally {
-			close();
+			if (statement != null) {
+				try {
+					statement.close();
+					statement = null;
+				} 
+				catch (SQLException e) {
+					logger.error(e.getMessage(), e);
+				}
+			}
+			if (connection != null) {
+				try {
+					connection.close();
+					connection = null;
+				} 
+				catch (SQLException e) {
+					logger.error(e.getMessage(), e);
+				}
+			}
 		}
 	}
 	
