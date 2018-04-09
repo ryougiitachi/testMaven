@@ -11,6 +11,18 @@
 	<name>testMaven</name>
 	
 	<properties>
+		<!-- compile version -->
+		<java.version>1.8</java.version>
+		<maven.compiler.source>1.8</maven.compiler.source>
+		<maven.compiler.target>1.8</maven.compiler.target>
+		<!-- charset -->
+		<!-- 这个是用来标识项目文件所使用的字符集，在eclipse中只要设置了这项项目对自动指定到对应的字符集 -->
+		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+		<!-- 这个应该是程序输出的默认字符集，在eclipse中貌似不能改变项目字符集 -->
+		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+		<!-- 相当于file.encoding=UTF-8，在compile阶段文件拷贝时候用到 -->
+		<maven.compiler.encoding>UTF-8</maven.compiler.encoding>
+		<!-- library -->
 		<slf4j.version>1.7.25</slf4j.version>
 		<logback.version>1.2.3</logback.version>
 		<jsoup.version>1.11.2</jsoup.version>
@@ -22,6 +34,12 @@
 		<apache.poi.version>3.17</apache.poi.version>
 		<apache.digester.version>3.2</apache.digester.version>
 	</properties>
+	
+	<modules>
+		<module>test-maven-gallery</module>
+		<module>test-maven-webserver</module>
+		<module>test-maven-poi</module>
+	</modules>
 	
 	<dependencyManagement>
 		<dependencies>
@@ -109,9 +127,32 @@
 		</dependencies>
 	</dependencyManagement>
 	
-	<modules>
-		<module>test-maven-gallery</module>
-		<module>test-maven-webserver</module>
-		<module>test-maven-poi</module>
-	</modules>
+	<build>
+		<pluginManagement>
+			<plugins>
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-compiler-plugin</artifactId>
+<!-- 					<version>3.1</version> -->
+	<!-- 				<configuration> -->
+	<!-- 					<SOURCE>1.7</SOURCE> -->
+	<!-- 					<TARGET>1.7</TARGET> -->
+	<!-- 				</CONFIGURATION> -->
+				</plugin>
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-shade-plugin</artifactId>
+					<version>3.0.0</version>
+					<executions>
+						<execution>
+							<phase>package</phase>
+							<goals>
+								<goal>shade</goal>
+							</goals>
+						</execution>
+					</executions>
+				</plugin>
+			</plugins>
+		</pluginManagement>
+	</build>
 </project>
