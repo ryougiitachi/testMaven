@@ -50,13 +50,17 @@ public class GalleryParserRunnable implements ControllableRunnable {
 				String strBaseUrl = WebUtils.getBaseUrl(strUrlLink);
 				if (strBaseUrl == null) {
 					logger.error("{} is not a valid website link.", strUrlLink);
-					return;
+					entity.setStatus("Invalid");
+					states.put(entity);
+					continue;
 				}
 				Class<?> clazzParser = confGalleryWebsite.getPraserClass(strBaseUrl);
 				GalleryWebsite website = confGalleryWebsite.getWebsite(strBaseUrl);
 				if (clazzParser == null || website == null) {
 					logger.error("{} has been not included in gallery.", strUrlLink);
-					return;
+					entity.setStatus("Non-included");
+					states.put(entity);
+					continue;
 				}
 				String strWebPath = strUrlLink.substring(strBaseUrl.length());
 
@@ -86,7 +90,9 @@ public class GalleryParserRunnable implements ControllableRunnable {
 					DBAccessConnUtils.close();
 				}
 				if (exit) {
-					return;
+					entity.setStatus("Downloaded");
+					states.put(entity);
+					continue;
 				}
 				
 				Parser parser = null;
@@ -104,7 +110,9 @@ public class GalleryParserRunnable implements ControllableRunnable {
 					exit = true;
 				}
 				if (exit) {
-					return;
+					entity.setStatus("Error");
+					states.put(entity);
+					continue;
 				}
 				
 				try {

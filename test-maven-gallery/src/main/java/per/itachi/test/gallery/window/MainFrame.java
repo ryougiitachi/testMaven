@@ -298,6 +298,7 @@ public class MainFrame extends JFrame implements ActionListener, WindowListener,
 							entity.setStatus("Added");
 							operations.putUrlLink(entity);
 							tableModelUrlLink.addRow(new Object[]{entity.getSeqID(), entity.getUrlLink(), entity.getStatus()});
+							txtFldUrlLink.setText(StringUtils.EMPTY);
 							logger.info("{} has been put into queue. ", strUrlLink);
 						} 
 						catch (InterruptedException ie) {

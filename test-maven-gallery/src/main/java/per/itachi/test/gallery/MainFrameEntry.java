@@ -63,6 +63,7 @@ public class MainFrameEntry {
 		
 		mainFrame.setVisible(true);
 		mainFrame.setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
+		mainFrame.setTitle("Gallery");
 	}
 
 }
