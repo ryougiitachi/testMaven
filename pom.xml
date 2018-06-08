@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" 
-		xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
 		xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	
 	<modelVersion>4.0.0</modelVersion>
@@ -27,18 +26,28 @@
 		<logback.version>1.2.3</logback.version>
 		<jsoup.version>1.11.2</jsoup.version>
 		<javax.version>7.0</javax.version>
+		<junit.version>3.8.1</junit.version>
 		<jackcess.version>2.1.9</jackcess.version>
 		<jackcess.encrypt.version>2.1.3</jackcess.encrypt.version>
 		<ucanaccess.version>4.0.3</ucanaccess.version>
 		<apache.taglibs.version>1.2.5</apache.taglibs.version>
 		<apache.poi.version>3.17</apache.poi.version>
 		<apache.digester.version>3.2</apache.digester.version>
+		<apache.struts1.version>1.3.10</apache.struts1.version>
+		<apache.struts2.version>2.5.16</apache.struts2.version>
+		<apache.freemarker.version>2.3.28</apache.freemarker.version>
+		<commons.lang3.version>3.7</commons.lang3.version>
+		<spring.version>4.3.17.RELEASE</spring.version>
+		<spring.security.version></spring.security.version>
+		<spring.boot.version></spring.boot.version>
 	</properties>
 	
 	<modules>
 		<module>test-maven-gallery</module>
 		<module>test-maven-webserver</module>
 		<module>test-maven-poi</module>
+		<module>test-maven-struts2</module>
+		<module>test-maven-struts</module>
 	</modules>
 	
 	<dependencyManagement>
@@ -72,6 +81,13 @@
 				<artifactId>javaee-api</artifactId>
 				<version>${javax.version}</version>
 			</dependency>
+			<!-- junit -->
+			<dependency>
+				<groupId>junit</groupId>
+				<artifactId>junit</artifactId>
+				<version>${junit.version}</version>
+				<scope>test</scope>
+			</dependency>
 			<!-- jackcess -->
 			<dependency>
 				<groupId>com.healthmarketscience.jackcess</groupId>
@@ -89,6 +105,12 @@
 				<groupId>net.sf.ucanaccess</groupId>
 				<artifactId>ucanaccess</artifactId>
 				<version>${ucanaccess.version}</version>
+			</dependency>
+			<!-- apache commons -->
+			<dependency>
+				<groupId>org.apache.commons</groupId>
+				<artifactId>commons-lang3</artifactId>
+				<version>${commons.lang3.version}</version>
 			</dependency>
 			<!-- apache taglibs -->
 			<dependency>
@@ -123,6 +145,81 @@
 				<artifactId>commons-digester3</artifactId>
 				<version>${apache.digester.version}</version>
 				<classifier>with-deps</classifier>
+			</dependency>
+			<!-- srping -->
+			<dependency>
+				<groupId>org.springframework</groupId>
+				<artifactId>spring-core</artifactId>
+				<version>${spring.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.springframework</groupId>
+				<artifactId>spring-beans</artifactId>
+				<version>${spring.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.springframework</groupId>
+				<artifactId>spring-context</artifactId>
+				<version>${spring.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.springframework</groupId>
+				<artifactId>spring-test</artifactId>
+				<version>${spring.version}</version>
+				<scope>test</scope>
+			</dependency>
+			<dependency>
+				<groupId>org.springframework</groupId>
+				<artifactId>spring-web</artifactId>
+				<version>${spring.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.springframework</groupId>
+				<artifactId>spring-webmvc</artifactId>
+				<version>${spring.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.springframework</groupId>
+				<artifactId>spring-aop</artifactId>
+				<version>${spring.version}</version>
+			</dependency>
+			<!-- struts -->
+			<dependency>
+				<groupId>struts</groupId>
+				<artifactId>struts</artifactId>
+				<version>${apache.struts1.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.apache.struts</groupId>
+				<artifactId>struts2-core</artifactId>
+				<version>${apache.struts2.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.apache.struts</groupId>
+				<artifactId>struts2-spring-plugin</artifactId>
+				<version>${apache.struts2.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.apache.struts</groupId>
+				<artifactId>struts2-json-plugin</artifactId>
+				<version>${apache.struts2.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.apache.struts</groupId>
+				<artifactId>struts2-sitemesh-plugin</artifactId>
+				<version>${apache.struts2.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.apache.struts</groupId>
+				<artifactId>struts2-junit-plugin</artifactId>
+				<version>${apache.struts2.version}</version>
+				<scope>test</scope>
+			</dependency>
+			<!-- freemarker -->
+			<dependency>
+				<groupId>org.freemarker</groupId>
+				<artifactId>freemarker</artifactId>
+				<version>${apache.freemarker.version}</version>
 			</dependency>
 		</dependencies>
 	</dependencyManagement>

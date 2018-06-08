@@ -68,13 +68,15 @@ public class GalleryParserRunnable implements ControllableRunnable {
 				try {
 					DBAccessConnUtils.connect();
 					history = DBAccessConnUtils.getGalleryHistoryByWebPath(strWebPath, website.getId());
-					if (history != null) {
+					if (history != null && history.getStatus() == GalleryConstants.PASER_STATUS_COMPLETED) {
 						logger.info("{} has been downloaded before, {}.", strUrlLink, history.getTitle());
 						exit = true;
 					}
 					else {
-						history = GalleryUtils.getNewGalleryHistory(strBaseUrl, strWebPath, website.getId());
-						DBAccessConnUtils.insertGalleryHistory(history);
+						if (history == null) {
+							history = GalleryUtils.getNewGalleryHistory(strBaseUrl, strWebPath, website.getId());
+							DBAccessConnUtils.insertGalleryHistory(history);
+						}
 						history.setStatus(GalleryConstants.PASER_STATUS_PROCESSING);
 						DBAccessConnUtils.updateGalleryHistoryByID(history);
 						logger.info("Added {} to history record, and start download it.", strUrlLink);
