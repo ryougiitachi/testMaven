@@ -63,7 +63,6 @@ public class GalleryParserRunnable implements ControllableRunnable {
 					continue;
 				}
 				String strWebPath = strUrlLink.substring(strBaseUrl.length());
-
 				boolean exit = false;
 				GalleryHistory history = null;
 				try {
