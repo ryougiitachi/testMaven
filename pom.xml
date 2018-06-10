@@ -230,7 +230,7 @@
 				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>
 					<artifactId>maven-compiler-plugin</artifactId>
-<!-- 					<version>3.1</version> -->
+					<version>3.1</version>
 	<!-- 				<configuration> -->
 	<!-- 					<SOURCE>1.7</SOURCE> -->
 	<!-- 					<TARGET>1.7</TARGET> -->
@@ -239,7 +239,7 @@
 				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>
 					<artifactId>maven-shade-plugin</artifactId>
-<!-- 					<version>3.0.0</version> -->
+					<version>3.0.0</version>
 					<configuration>
 						<!-- 打包的时候在项目根目录下生成dependency-reduced-pom.xml，默认为true -->
 						<createDependencyReducedPom>false</createDependencyReducedPom>
