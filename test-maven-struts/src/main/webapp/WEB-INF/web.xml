@@ -13,4 +13,17 @@
 		<servlet-name>Faces Servlet</servlet-name>
 		<url-pattern>/faces/*</url-pattern>
 	</servlet-mapping>
+	
+	<servlet>
+		<servlet-name>struts1</servlet-name>
+		<servlet-class>org.apache.struts.action.ActionServlet</servlet-class>
+		<init-param>
+			<!-- 默认路径/WEB-INF/struts-config.xml -->
+			<param-name>config</param-name>
+			<param-value>/WEB-INF/struts-config-user.xml</param-value>
+		</init-param>
+		<!-- 
+		<load-on-startup>2</load-on-startup>
+		 -->
+	</servlet>
 </web-app>
