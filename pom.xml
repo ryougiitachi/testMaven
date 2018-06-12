@@ -185,8 +185,8 @@
 			</dependency>
 			<!-- struts -->
 			<dependency>
-				<groupId>struts</groupId>
-				<artifactId>struts</artifactId>
+				<groupId>org.apache.struts</groupId>
+				<artifactId>struts-core</artifactId>
 				<version>${apache.struts1.version}</version>
 			</dependency>
 			<dependency>

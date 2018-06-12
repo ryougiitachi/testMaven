@@ -3,6 +3,9 @@
 		"-//Apache Software Foundation//DTD Struts Configuration 2.5//EN"
 		"http://struts.apache.org/dtds/struts-2.5.dtd">
 <struts>
+	<!-- 这个排除地址列表实现有点问题 -->
+	<constant name="struts.action.excludePattern" value="/servlet/.*"/>
+	
 	<package name="default" extends="struts-default" namespace="/">
 	</package>
 	<package name="ajax" extends="json-default" namespace="/ajax">
