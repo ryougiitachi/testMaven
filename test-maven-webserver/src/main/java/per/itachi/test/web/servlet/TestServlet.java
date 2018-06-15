@@ -89,5 +89,4 @@ public class TestServlet extends HttpServlet {
 		builder.append("isHttpOnly=").append(cookie.isHttpOnly()).append("; ");
 		return builder.toString();
 	}
-
 }
