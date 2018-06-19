@@ -1,7 +1,6 @@
 /target/
-/WebContent/
-/.classpath
-/.project
 /.settings/
+/.project
+/.classpath
 /.tern-project
 /*.iml
