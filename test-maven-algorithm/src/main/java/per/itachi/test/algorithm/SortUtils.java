@@ -47,10 +47,10 @@ public class SortUtils {
 		T[] des = Arrays.copyOf(src, src.length);
 		T tmp = null;
 		int pos;
-		for (int i = 0; i < des.length; i++) {
+		for (int i = 0; i < des.length - 1; i++) {
 			pos = i;
 			for (int j = i + 1; j < des.length; j++) {
-				if (des[i].compareTo(des[j]) > 0) {
+				if (des[pos].compareTo(des[j]) > 0) {
 					pos = j;
 				}
 			}
@@ -63,10 +63,16 @@ public class SortUtils {
 		return des;
 	}
 	
+	/**
+	 * 
+	 * */
 	public static <T extends Comparable<T>> T[] sortByQuick(T[] src) {
 		return sortByQuick(src, 0, src.length);
 	}
 	
+	/**
+	 * 
+	 * */
 	public static <T extends Comparable<T>> T[] sortByQuick(T[] src, int start, int end) {
 		return null;
 	}
