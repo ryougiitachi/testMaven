@@ -17,13 +17,19 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class TestServlet extends HttpServlet {
-	
-	private final Logger logger = LoggerFactory.getLogger(TestServlet.class);
 
 	/**
 	 * 
 	 */
 	private static final long serialVersionUID = -7934784435589448822L;
+
+	private final Logger logger = LoggerFactory.getLogger(TestServlet.class);
+
+	private ThreadLocal<StringBuilder> thdLocalStrBuilder;
+
+	public TestServlet() {
+		thdLocalStrBuilder = new ThreadLocal<>();
+	}
 	
 	@Override
 	public void init(ServletConfig config) throws ServletException {
@@ -77,7 +83,7 @@ public class TestServlet extends HttpServlet {
 	}
 	
 	private String getCookieString(Cookie cookie) {
-		StringBuilder builder = new StringBuilder();
+		StringBuilder builder = getLocalStringBuilder();
 		builder.append("Name=").append(cookie.getName()).append("; ");
 		builder.append("Value=").append(cookie.getValue()).append("; ");
 		builder.append("Comment=").append(cookie.getComment()).append("; ");
@@ -88,5 +94,14 @@ public class TestServlet extends HttpServlet {
 		builder.append("Version=").append(cookie.getVersion()).append("; ");
 		builder.append("isHttpOnly=").append(cookie.isHttpOnly()).append("; ");
 		return builder.toString();
+	}
+
+	private StringBuilder getLocalStringBuilder() {
+		StringBuilder builder = thdLocalStrBuilder.get();
+		if (builder == null) {
+			builder = new StringBuilder();
+			thdLocalStrBuilder.set(builder);
+		}
+		return builder;
 	}
 }
