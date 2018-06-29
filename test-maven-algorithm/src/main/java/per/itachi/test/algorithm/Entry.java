@@ -16,7 +16,9 @@ public class Entry {
 		System.out.println();
 //		arrDes = SortUtils.sortByCustom(arrSrc);
 //		arrDes = SortUtils.sortByBubble(arrSrc);
-		arrDes = SortUtils.sortBySelectSimple(arrSrc);
+//		arrDes = SortUtils.sortBySelectSimple(arrSrc);
+//		arrDes = SortUtils.sortByQuick(arrSrc);
+		arrDes = SortUtils.sortByQuickNonRecursive(arrSrc);
 		for (int i = 0; i < arrDes.length; i++) {
 			System.out.printf("%d ", arrDes[i]);
 		}

@@ -1,6 +1,8 @@
 package per.itachi.test.algorithm;
 
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 
 public class SortUtils {
 	
@@ -70,21 +72,81 @@ public class SortUtils {
 	 * Quick sort is a kind of improvement for bubble sort. 
 	 * */
 	public static <T extends Comparable<T>> T[] sortByQuick(T[] src) {
-		return sortByQuick(src, 0, src.length);
+		T[] des = Arrays.copyOf(src, src.length);
+		sortByQuick(des, 0, src.length - 1);
+		return des;
 	}
 	
 	/**
 	 * Quick sort is a kind of improvement for bubble sort. 
 	 * */
-	public static <T extends Comparable<T>> T[] sortByQuick(T[] src, int start, int end) { 
-		return null;
+	public static <T extends Comparable<T>> void sortByQuick(T[] src, int start, int end) {
+		int pivot = 0;
+		if (start < end) {
+			pivot = getQuickSortPivot(src, start, end);
+			sortByQuick(src, start, pivot - 1);
+			sortByQuick(src, pivot + 1, end);
+		}
+	}
+	
+	/**
+	 * Quick sort of Non-recursive version 
+	 * */
+	public static <T extends Comparable<T>> T[] sortByQuickNonRecursive(T[] src) {
+		return sortByQuickNonRecursive(src, 0, src.length - 1);
+	}
+	
+	public static <T extends Comparable<T>> T[] sortByQuickNonRecursive(T[] src, int start, int end) {
+		T[] des = Arrays.copyOf(src, src.length);
+		List<Integer> stackPartition = new ArrayList<>(32);
+		int low, high;
+		int pivot;
+		stackPartition.add(end);
+		stackPartition.add(start);
+		while (!stackPartition.isEmpty()) {
+			low = stackPartition.remove(stackPartition.size() - 1);
+			high = stackPartition.remove(stackPartition.size() - 1);
+			pivot = getQuickSortPivot(des, low, high);
+			// low < pivot - 1 should be better and more efficient, instead of low < pivot 
+			if (low < pivot - 1) {
+				stackPartition.add(pivot - 1);
+				stackPartition.add(low);
+			}
+			// pivot + 1 < high should be better and more efficient, pivot < high 
+			if (pivot + 1 < high) {
+				stackPartition.add(high);
+				stackPartition.add(pivot + 1);
+			}
+		}
+		return des;
 	}
 	
 	private static <T extends Comparable<T>> int getQuickSortPivot(T[] src, int low, int high) {
-		int pivot = low;
-		T tmp;
+		//或者定义一个枢轴索引的变量，或者定义一个存枢轴的变量，总要有一个变量保存枢轴的位置；
+		T pivot = src[low];
 		while (low < high) {
+			//如果使用交换的方式，临时变量需要重新定义，不能和枢轴的那个弄混了；
+//			T tmp;
+			// Firstly, puts less elements into the left of the pivot; puts one element each time; 
+			while (low < high && pivot.compareTo(src[high]) <= 0) {
+				--high;
+			}
+			// Actually, it is not necessary to swap both low and high, because one of them is pivot element;
+//			tmp = src[low];
+//			src[low] = src[high];
+//			src[high] = tmp;
+			src[low] = src[high];
+			// And then, puts larger elements into the right of the pivot; puts one element each time; 
+			while (low < high && pivot.compareTo(src[low]) >= 0) {
+				++low;
+			}
+			// Actually, it is not necessary to swap both low and high, because one of them is pivot element;
+//			tmp = src[low];
+//			src[low] = src[high];
+//			src[high] = tmp;
+			src[high] = src[low];
 		}
-		return pivot;
+		src[low] = pivot;
+		return low;
 	}
 }
