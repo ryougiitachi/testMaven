@@ -152,7 +152,8 @@ public class SortUtils {
 	
 	public static <T extends Comparable<T>> T[] sortByMerging(T[] src) {
 		T[] des = Arrays.copyOf(src, src.length);
-		sortByMerging(src, des, 0, src.length - 1);
+		T[] aux = Arrays.copyOf(src, src.length);
+		sortByMerging(des, aux, 0, src.length - 1);
 		return des;
 	}
 	
@@ -161,11 +162,13 @@ public class SortUtils {
 		if (start == end) {
 			des[start] = src[start];
 		} 
-		else {
-			int mid = (start + end) / 2; // (start + end) / 2
+		else if (start < end) { // It is also OK to place else. 
+			int mid = (start + end) >> 1; // (start + end) / 2
 			sortByMerging(src, des, start, mid);
 			sortByMerging(src, des, mid + 1, end);
 			mergeOrderedSequence(src, des, start, mid, end);
+		}
+		else {
 		}
 	}
 	
@@ -195,5 +198,7 @@ public class SortUtils {
 				des[k++] = src[j++];
 			}
 		}
+		// It is very essential to copy auxiliary back to source. 很关键 
+		System.arraycopy(des, start, src, start, end - start + 1);
 	}
 }
