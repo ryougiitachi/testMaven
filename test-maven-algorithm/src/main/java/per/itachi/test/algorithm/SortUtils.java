@@ -149,4 +149,51 @@ public class SortUtils {
 		src[low] = pivot;
 		return low;
 	}
+	
+	public static <T extends Comparable<T>> T[] sortByMerging(T[] src) {
+		T[] des = Arrays.copyOf(src, src.length);
+		sortByMerging(src, des, 0, src.length - 1);
+		return des;
+	}
+	
+	public static <T extends Comparable<T>> void sortByMerging(T[] src, T[] des, int start, int end) {
+		// >= isn't necessary? 
+		if (start == end) {
+			des[start] = src[start];
+		} 
+		else {
+			int mid = (start + end) / 2; // (start + end) / 2
+			sortByMerging(src, des, start, mid);
+			sortByMerging(src, des, mid + 1, end);
+			mergeOrderedSequence(src, des, start, mid, end);
+		}
+	}
+	
+	private static <T extends Comparable<T>> void mergeOrderedSequence(T[] src, T[] des, int start, int mid, int end) {
+		int i = start;		// the 1st sub-sequence (left)
+		int j = mid + 1;	// the 2nd sub-sequence (right)
+		int k = start;			// the destination sequence *** 
+		// mid是左右子序列的分割点，比较符号就得是闭集的了，不能是开集的
+		while (i <= mid && j <= end) {
+			if (src[i].compareTo(src[j]) <= 0) {
+				des[k++] = src[i++];
+			}
+			else {
+				des[k++] = src[j++];
+			}
+		}
+		// clear the rest of elements 
+		if (i <= mid) { // i <= mid 
+			// clear the left sub-sequence 
+			while (i <= mid) {
+				des[k++] = src[i++];
+			}
+		}
+		if (j <= end) { // j <= end 
+			// clear the right sub-sequence 
+			while (j <= end) {
+				des[k++] = src[j++];
+			}
+		}
+	}
 }
