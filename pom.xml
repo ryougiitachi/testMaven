@@ -47,8 +47,9 @@
 		<module>test-maven-poi</module>
 		<module>test-maven-struts2</module>
 		<module>test-maven-struts</module>
-    <module>test-maven-algorithm</module>
-  </modules>
+		<module>test-maven-algorithm</module>
+		<module>test-maven-rpc</module>
+	</modules>
 	
 	<dependencyManagement>
 		<dependencies>
