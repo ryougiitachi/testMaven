@@ -49,6 +49,7 @@
 		<module>test-maven-struts</module>
 		<module>test-maven-algorithm</module>
 		<module>test-maven-rpc</module>
+		<module>test-maven-commons</module>
 	</modules>
 	
 	<dependencyManagement>
