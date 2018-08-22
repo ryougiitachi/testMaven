@@ -9,11 +9,13 @@ public class Entry {
 		Integer[] arrSrc = null;
 		Integer[] arrDes = null;
 		arrSrc = new Integer[32];
+		System.out.println("Source: ");
 		for (int i = 0; i < arrSrc.length; i++) {
 			arrSrc[i] = random.nextInt(100);
 			System.out.printf("%d ", arrSrc[i]);
 		}
 		System.out.println();
+		System.out.println("Destination: ");
 //		arrDes = SortUtils.sortByCustom(arrSrc);
 //		arrDes = SortUtils.sortByBubble(arrSrc);
 //		arrDes = SortUtils.sortBySelectSimple(arrSrc);
