@@ -10,7 +10,7 @@ public class MiscWarehouseImpl extends UnicastRemoteObject implements MiscWareho
 	/**
 	 * 
 	 */
-	private static final long serialVersionUID = 3510098862185937945L;
+	private static final long serialVersionUID = 8652884347520760259L;
 
 	public MiscWarehouseImpl() throws RemoteException {
 		super();

@@ -1,5 +1,8 @@
 package per.itachi.test.rpc;
 
+import java.net.MalformedURLException;
+import java.rmi.Naming;
+import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
 
 import javax.naming.Context;
@@ -20,7 +23,7 @@ public class EntryRmiClient {
 	public static void main(String[] args) {
 		logger.info("Starting RIM client. ");
 		try {
-			String strBasedURL = "rmi://localhost/";
+			String strBasedURL = "rmi://localhost:1099/";
 			Context contextRegistry = new InitialContext();
 			logger.info("RMI registry binding: ");
 			NamingEnumeration<NameClassPair> enumeration = contextRegistry.list(strBasedURL);//configurable
@@ -28,12 +31,12 @@ public class EntryRmiClient {
 				NameClassPair pair = enumeration.next();
 				logger.info("{}: {}", pair.getName(), pair.getClassName());
 			}
-			String strWarehouseURL = strBasedURL + "miscellaneous_warehouse";//可通过文件配置
-			Object object = contextRegistry.lookup(strWarehouseURL);
+			String strWarehouseURL = strBasedURL + "miscellaneous";//可通过文件配置
+			Object object = Naming.lookup(strWarehouseURL);
 			MiscWarehouse misc = (MiscWarehouse)object;
 			logger.info("{}", misc.getMiscWarehouseName());
 		} 
-		catch (NamingException | RemoteException e) {
+		catch (NamingException | RemoteException | MalformedURLException | NotBoundException e) {
 			logger.error("Error occured when initialising client pointend. ", e);
 		}
 	}

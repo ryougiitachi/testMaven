@@ -11,8 +11,12 @@ import javax.naming.NamingException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import per.itachi.test.rpc.rmi.MiscWarehouse;
 import per.itachi.test.rpc.rmi.impl.MiscWarehouseImpl;
 
+/**
+ * 貌似-Djava.rmi.server.codebase=file:target/classes/不写都可以调用
+ * */
 public class EntryRmiServer {
 	
 	private static final Logger logger = LoggerFactory.getLogger(EntryRmiServer.class);
@@ -24,7 +28,7 @@ public class EntryRmiServer {
 			logger.info("Start initialsing... ");
 			
 			logger.info("Constructing RIM server implementation class. ");
-			MiscWarehouseImpl rmiMisc = new MiscWarehouseImpl();//可以通过读取配置文件列表的方式初始化一大堆warehouse类
+			MiscWarehouse rmiMisc = new MiscWarehouseImpl();//可以通过读取配置文件列表的方式初始化一大堆warehouse类
 			logger.info("Binding RIM server implementation class to registry. ");
 			Context contextRegistry = new InitialContext();//centralWarehouse
 			logger.info("RMI registry unbinding: ");
@@ -34,7 +38,8 @@ public class EntryRmiServer {
 				logger.info("Unbind {}: {}", pair.getName(), pair.getClassName());
 				contextRegistry.unbind("rmi:" + pair.getName());
 			}
-			contextRegistry.bind("rmi:miscellaneous_warehouse", rmiMisc);
+			contextRegistry.bind(strBasedURL + "/miscellaneous", rmiMisc);
+//			Naming.bind(strBasedURL + "/miscellaneous", rmiMisc);
 			
 			logger.info("Finish initialising. ");
 			logger.info("Waiting for invocations from clients. ");
@@ -43,5 +48,4 @@ public class EntryRmiServer {
 			logger.error("Error occured when initialising server warehouse. ", e);
 		}
 	}
-
 }
