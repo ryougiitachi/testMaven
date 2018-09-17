@@ -121,7 +121,7 @@ public class MainFrame extends JFrame implements ActionListener, WindowListener,
 		paneInput.setLayout(new BorderLayout());
 		paneInput.add(txtFldUrlLink, BorderLayout.CENTER);
 		paneInput.add(btnSubmit, BorderLayout.EAST);
-		this.add(paneInput, BorderLayout.CENTER);
+		this.add(paneInput, BorderLayout.NORTH);
 	}
 	
 	private void initWindowList() {
@@ -131,7 +131,7 @@ public class MainFrame extends JFrame implements ActionListener, WindowListener,
 //		table.setModel(tableModelUrlLink);
 		JScrollPane paneList = new JScrollPane(table);
 //		paneList.setViewportView(table);
-		this.add(paneList, BorderLayout.SOUTH);
+		this.add(paneList, BorderLayout.CENTER);
 	}
 	
 	private void initWindowListener() {

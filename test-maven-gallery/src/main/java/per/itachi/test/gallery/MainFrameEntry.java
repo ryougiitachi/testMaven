@@ -26,8 +26,11 @@ import per.itachi.test.gallery.window.MainFrame;
 public class MainFrameEntry {
 	
 	private static final Logger logger = LoggerFactory.getLogger(MainFrameEntry.class);
+	
+	private static final String MAIN_TITLE = "Gallery";
 
 	public static void main(String[] args) {
+		logger.info("Starting {}", MAIN_TITLE);
 		try {
 			UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
 		} 
@@ -44,11 +47,15 @@ public class MainFrameEntry {
 			logger.error(e.getMessage(), e);
 		}
 		
+		logger.info("Initialising blocking queue... ");
 		BlockingQueue<FrameGalleryItemEntity> queueUrlLink = new LinkedBlockingQueue<>();
 		BlockingQueue<FrameGalleryItemEntity> queueStateChanged = new LinkedBlockingQueue<>();
 		FrameOperationEntity entity = new FrameOperationEntity();
 		
+		logger.info("Initialising main frame... ");
 		JFrame mainFrame = new MainFrame(entity);
+		
+		logger.info("Initialising relevant threads... ");
 		ControllableRunnable runnableParser = new GalleryParserRunnable(queueUrlLink, queueStateChanged);
 		ControllableRunnable runnableState = new GalleryItemStateRunnable((GalleryParserListener)mainFrame, queueStateChanged);
 		ExecutorService executorService = Executors.newFixedThreadPool(2);
@@ -61,9 +68,11 @@ public class MainFrameEntry {
 		entity.setControllableRunnable(listRunnables);
 		entity.setExecutorService(executorService);
 		
+		logger.info("Showing main frame... ");
 		mainFrame.setVisible(true);
 		mainFrame.setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
-		mainFrame.setTitle("Gallery");
+		mainFrame.setTitle(MAIN_TITLE);
+		
+		logger.info("Started {}", MAIN_TITLE);
 	}
-
 }
