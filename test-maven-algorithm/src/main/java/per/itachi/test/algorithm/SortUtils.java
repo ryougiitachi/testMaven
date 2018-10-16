@@ -106,7 +106,7 @@ public class SortUtils {
 		while (!stackPartition.isEmpty()) {
 			low = stackPartition.remove(stackPartition.size() - 1);
 			high = stackPartition.remove(stackPartition.size() - 1);
-			pivot = getQuickSortPivot(des, low, high);
+			pivot = getQuickSortPivotByPrePtr(des, low, high);
 			// low < pivot - 1 should be better and more efficient, instead of low < pivot 
 			if (low < pivot - 1) {
 				stackPartition.add(pivot - 1);
@@ -148,6 +148,31 @@ public class SortUtils {
 		}
 		src[low] = pivot;
 		return low;
+	}
+	
+	/**
+	 * 前后指针法获取枢轴索引 
+	 * */
+	private static <T extends Comparable<T>> int getQuickSortPivotByPrePtr(T[] src, int low, int high) {
+		// 和一般的左右指针法不同，前后指针法一般选取最右侧为分区数，总体的思路是顺序地把小于key导到序列左侧；
+		// cur永远向前走，prev只有在cur所在值小于key值的时候才向前，并且不等于cur的时候才交换；
+		// 因为cur永远向前走，prev有条件向前走，所以prev一般不会大于cur；
+		T key = src[high];
+		int cur = low;
+		int prev = low - 1;
+		while (cur < high) {
+			if (src[cur].compareTo(key) < 0 && ++prev != cur) {
+				T tmp = src[cur];
+				src[cur] = src[prev];
+				src[prev] = tmp;
+			}
+			++cur;
+		}
+		++prev;
+		T tmp = src[prev];
+		src[prev] = src[high];
+		src[high] = tmp;
+		return prev;
 	}
 	
 	public static <T extends Comparable<T>> T[] sortByMerging(T[] src) {

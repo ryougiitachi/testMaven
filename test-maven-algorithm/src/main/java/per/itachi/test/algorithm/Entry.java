@@ -20,8 +20,8 @@ public class Entry {
 //		arrDes = SortUtils.sortByBubble(arrSrc);
 //		arrDes = SortUtils.sortBySelectSimple(arrSrc);
 //		arrDes = SortUtils.sortByQuick(arrSrc);
-//		arrDes = SortUtils.sortByQuickNonRecursive(arrSrc);
-		arrDes = SortUtils.sortByMerging(arrSrc);
+		arrDes = SortUtils.sortByQuickNonRecursive(arrSrc);
+//		arrDes = SortUtils.sortByMerging(arrSrc);
 		for (int i = 0; i < arrDes.length; i++) {
 			System.out.printf("%d ", arrDes[i]);
 		}
