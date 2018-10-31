@@ -38,7 +38,7 @@
 		<commons.lang3.version>3.7</commons.lang3.version>
 		<spring.version>4.3.17.RELEASE</spring.version>
 		<spring.security.version/>
-		<spring.boot.version/>
+		<spring.boot.version>2.1.0.RELEASE</spring.boot.version>
 	</properties>
 	
 	<modules>
@@ -50,6 +50,7 @@
 		<module>test-maven-algorithm</module>
 		<module>test-maven-rpc</module>
 		<module>test-maven-commons</module>
+		<module>test-maven-springboot</module>
 	</modules>
 	
 	<dependencyManagement>
@@ -148,7 +149,7 @@
 				<version>${apache.digester.version}</version>
 				<classifier>with-deps</classifier>
 			</dependency>
-			<!-- srping -->
+			<!-- spring -->
 			<dependency>
 				<groupId>org.springframework</groupId>
 				<artifactId>spring-core</artifactId>
@@ -222,6 +223,14 @@
 				<groupId>org.freemarker</groupId>
 				<artifactId>freemarker</artifactId>
 				<version>${apache.freemarker.version}</version>
+			</dependency>
+			<!-- spring boot -->
+			<dependency>
+				<groupId>org.springframework.boot</groupId>
+				<artifactId>spring-boot-dependencies</artifactId>
+				<version>${spring.boot.version}</version>
+				<type>pom</type>
+				<scope>import</scope><!-- This is the key of creating a spring boot project without spring-boot-starter-parent as parent. -->
 			</dependency>
 		</dependencies>
 	</dependencyManagement>
