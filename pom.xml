@@ -39,6 +39,7 @@
 		<spring.version>4.3.17.RELEASE</spring.version>
 		<spring.security.version/>
 		<spring.boot.version>2.1.0.RELEASE</spring.boot.version>
+		<jasypt.version>1.9.2</jasypt.version>
 	</properties>
 	
 	<modules>
@@ -51,6 +52,8 @@
 		<module>test-maven-rpc</module>
 		<module>test-maven-commons</module>
 		<module>test-maven-springboot</module>
+		<module>test-maven-netty</module>
+		<module>test-maven-jasypt</module>
 	</modules>
 	
 	<dependencyManagement>
@@ -231,6 +234,12 @@
 				<version>${spring.boot.version}</version>
 				<type>pom</type>
 				<scope>import</scope><!-- This is the key of creating a spring boot project without spring-boot-starter-parent as parent. -->
+			</dependency>
+			<!-- jasypt -->
+			<dependency>
+				<groupId>org.jasypt</groupId>
+				<artifactId>jasypt</artifactId>
+				<version>${jasypt.version}</version>
 			</dependency>
 		</dependencies>
 	</dependencyManagement>
