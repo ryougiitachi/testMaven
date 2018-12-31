@@ -1,5 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" 
+		xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+		xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>per.itachi.test</groupId>
@@ -39,6 +41,7 @@
 		<spring.version>4.3.17.RELEASE</spring.version>
 		<spring.security.version/>
 		<spring.boot.version>2.1.0.RELEASE</spring.boot.version>
+		<netty.version>4.1.32.Final</netty.version>
 	</properties>
 	
 	<modules>
@@ -51,6 +54,7 @@
 		<module>test-maven-rpc</module>
 		<module>test-maven-commons</module>
 		<module>test-maven-springboot</module>
+		<module>test-maven-netty</module>
 	</modules>
 	
 	<dependencyManagement>
@@ -231,6 +235,12 @@
 				<version>${spring.boot.version}</version>
 				<type>pom</type>
 				<scope>import</scope><!-- This is the key of creating a spring boot project without spring-boot-starter-parent as parent. -->
+			</dependency>
+			<!-- netty -->
+			<dependency>
+				<groupId>io.netty</groupId>
+				<artifactId>netty-all</artifactId>
+				<version>${netty.version}</version>
 			</dependency>
 		</dependencies>
 	</dependencyManagement>
