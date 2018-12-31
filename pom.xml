@@ -42,6 +42,7 @@
 		<spring.security.version/>
 		<spring.boot.version>2.1.0.RELEASE</spring.boot.version>
 		<netty.version>4.1.32.Final</netty.version>
+		<jasypt.version>1.9.2</jasypt.version>
 	</properties>
 	
 	<modules>
@@ -55,6 +56,7 @@
 		<module>test-maven-commons</module>
 		<module>test-maven-springboot</module>
 		<module>test-maven-netty</module>
+		<module>test-maven-jasypt</module>
 	</modules>
 	
 	<dependencyManagement>
@@ -241,6 +243,12 @@
 				<groupId>io.netty</groupId>
 				<artifactId>netty-all</artifactId>
 				<version>${netty.version}</version>
+			</dependency>
+			<!-- jasypt -->
+			<dependency>
+				<groupId>org.jasypt</groupId>
+				<artifactId>jasypt</artifactId>
+				<version>${jasypt.version}</version>
 			</dependency>
 		</dependencies>
 	</dependencyManagement>
