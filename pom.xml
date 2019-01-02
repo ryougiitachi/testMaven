@@ -57,6 +57,7 @@
 		<module>test-maven-springboot</module>
 		<module>test-maven-netty</module>
 		<module>test-maven-jasypt</module>
+		<module>test-maven-nio</module>
 	</modules>
 	
 	<dependencyManagement>
