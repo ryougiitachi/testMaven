@@ -12,6 +12,9 @@ public class TestController {
 	
 	private final Logger logger = LoggerFactory.getLogger(TestController.class);
 	
+	/**
+	 * RequestMapping的path如果是/开头可以无视Controller中的value？
+	 * */
 	@RequestMapping(path="/status", method={RequestMethod.GET})
 	@ResponseBody
 	public String checkStatus() {
