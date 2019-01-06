@@ -3,6 +3,7 @@ package per.itachi.test.nio.server;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.net.ServerSocket;
+import java.net.SocketAddress;
 import java.nio.ByteBuffer;
 import java.nio.channels.SelectionKey;
 import java.nio.channels.Selector;
@@ -10,6 +11,8 @@ import java.nio.channels.ServerSocketChannel;
 import java.nio.channels.SocketChannel;
 import java.util.Iterator;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -28,9 +31,11 @@ public class SelectorServerHandler implements ControllableRunnable {
 	private final Logger logger = LoggerFactory.getLogger(SelectorServerHandler.class);
 	
 	private volatile boolean terminated = false;
-	private boolean running = false;
+	private volatile boolean running = false;
 
 	private Selector selector;
+	
+	private ConcurrentMap<SocketAddress, SocketChannel> clients;
 	
 	@Override
 	public void run() {
@@ -58,6 +63,9 @@ public class SelectorServerHandler implements ControllableRunnable {
 			serverSocketChannel.register(selector, SelectionKey.OP_ACCEPT);
 			
 			logger.debug("The server socket channel is {}", System.identityHashCode(serverSocketChannel));
+			
+			clients = new ConcurrentHashMap<>();
+			
 			while (!terminated) {
 				readyChannels = selector.select();
 				if (readyChannels == 0) {
@@ -77,6 +85,12 @@ public class SelectorServerHandler implements ControllableRunnable {
 						socketChannel = serverSocketChannel.accept();
 						socketChannel.configureBlocking(false);
 						keyTmp = socketChannel.register(selector, SelectionKey.OP_READ | SelectionKey.OP_WRITE);
+						if (clients.get(socketChannel.getRemoteAddress()) == null) {
+							clients.put(socketChannel.getRemoteAddress(), socketChannel);
+						}
+						else {
+							// TODO: 
+						}
 						logger.debug("The key {} with {} is acceptable, and channel key {}", key, System.identityHashCode(key.channel()), keyTmp);
 					}
 					if (key.isReadable()) {
