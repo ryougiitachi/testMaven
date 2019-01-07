@@ -155,7 +155,7 @@ public class SelectorServerHandler implements ControllableRunnable {
 			socketChannel.close();
 		} 
 		catch (IOException ioe) {
-			logger.error("", e);
+			logger.error("Exception occured when trying to close channel for .", e);
 		}
 	}
 
