@@ -78,6 +78,7 @@ public class SelectorServerHandler implements ControllableRunnable {
 					key = iteratorKey.next();
 					iteratorKey.remove();
 					if (key.isConnectable()) {
+						//key.isConnectable is available only when program runs as client. 
 						logger.debug("The key {} with {} is connectable", key, key.channel());
 					}
 					if (key.isAcceptable()) {
@@ -95,10 +96,7 @@ public class SelectorServerHandler implements ControllableRunnable {
 					}
 					if (key.isReadable()) {
 						//如果注册了SelectionKey.OP_READ并且缓冲区中有未读取的数据，则每次循环都会进入这个isReadable分支；
-						socketChannel = (SocketChannel)key.channel();
-						ByteBuffer buffer = ByteBuffer.allocate(LENGTH_SEGMENT);
-						socketChannel.read(buffer);
-						logger.debug("The key {} with {} is readable: {}", key, key.channel(), buffer);
+						handleReadable(key);
 					}
 					if (key.isWritable()) {
 						//如果注册了SelectionKey.OP_WRITE并且没写过，则每次循环都会进入这个isWritable分支(?)
@@ -136,6 +134,28 @@ public class SelectorServerHandler implements ControllableRunnable {
 				}
 			}
 			running = false;
+		}
+	}
+	
+	private void handleReadable(SelectionKey key) {
+		SocketChannel socketChannel = (SocketChannel)key.channel();
+		ByteBuffer buffer = ByteBuffer.allocate(LENGTH_SEGMENT);
+		try {
+			socketChannel.read(buffer);
+			logger.debug("The key {} with {} is readable: {}", key, key.channel(), buffer);
+		} 
+		catch (IOException e) {
+			logger.error("Exception occured when reading data from {} using key {}. ", socketChannel, key, e);
+			handleReadableException(socketChannel, e);
+		}
+	}
+	
+	private void handleReadableException(SocketChannel socketChannel, IOException e) {
+		try {
+			socketChannel.close();
+		} 
+		catch (IOException ioe) {
+			logger.error("", e);
 		}
 	}
 
