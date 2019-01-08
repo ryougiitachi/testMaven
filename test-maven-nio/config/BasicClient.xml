@@ -5,7 +5,7 @@
 		<serverPort>20001</serverPort>
 		<numConn>1</numConn>
 		<charset>UTF-8</charset>
-		<interval>10000</interval><!-- sleep time in millisecond -->
+		<interval>1500</interval><!-- sleep time in millisecond -->
 	</client>
 	<console>
 		<!-- Value must be true or false -->

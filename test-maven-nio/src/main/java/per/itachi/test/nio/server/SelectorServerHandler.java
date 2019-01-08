@@ -28,6 +28,8 @@ public class SelectorServerHandler implements ControllableRunnable {
 	
 	private static final int LENGTH_SEGMENT = 1536;
 	
+	private static final int MAX_CONN = 100;
+	
 	private final Logger logger = LoggerFactory.getLogger(SelectorServerHandler.class);
 	
 	private volatile boolean terminated = false;
@@ -44,14 +46,15 @@ public class SelectorServerHandler implements ControllableRunnable {
 		
 		ServerSocketChannel serverSocketChannel = null;
 		ServerSocket serverSocket = null;
-		SocketChannel socketChannel = null;
 		
 		Selector selector = null;
 		Set<SelectionKey> selectionKeys = null;
 		Iterator<SelectionKey> iteratorKey = null;
 		SelectionKey key = null;
-		SelectionKey keyTmp = null;
 		int readyChannels = 0;
+		
+		int thresholdTimeWrite = 12;//TODO: testing
+		int countTimeWrite = 0;//TODO: testing 
 		try {
 			logger.info("Starting server handler...");
 			serverSocketChannel = ServerSocketChannel.open();
@@ -71,37 +74,41 @@ public class SelectorServerHandler implements ControllableRunnable {
 				if (readyChannels == 0) {
 					continue;
 				}
-				logger.debug("{} new keys comes in", readyChannels);
+				logger.debug("{} new keys comes in. ", readyChannels);
 				selectionKeys = selector.selectedKeys();
 				iteratorKey = selectionKeys.iterator();
 				while (iteratorKey.hasNext()) {
 					key = iteratorKey.next();
 					iteratorKey.remove();
+					//key.isConnectable is available only when program runs as client. 
 					if (key.isConnectable()) {
-						//key.isConnectable is available only when program runs as client. 
 						logger.debug("The key {} with {} is connectable", key, key.channel());
 					}
 					if (key.isAcceptable()) {
-						serverSocketChannel = (ServerSocketChannel)key.channel();//should be the same one as the previous server channel
-						socketChannel = serverSocketChannel.accept();
-						socketChannel.configureBlocking(false);
-						keyTmp = socketChannel.register(selector, SelectionKey.OP_READ | SelectionKey.OP_WRITE);
-						if (clients.get(socketChannel.getRemoteAddress()) == null) {
-							clients.put(socketChannel.getRemoteAddress(), socketChannel);
-						}
-						else {
-							// TODO: 
-						}
-						logger.debug("The key {} with {} is acceptable, and channel key {}", key, System.identityHashCode(key.channel()), keyTmp);
+						handleAcceptable(key);
 					}
+					//如果远程客户端突然断开连接，这边是检测不到对方已断开连接了的；这时SelectionKey.isValid()依然为true，并且SelectionKey.isReadable()将变为true；
+					//再次调用SocketChannel.read()抛出异常后才会把valid标志位置为false；
+					//这是一下这段代码可能会报错的原因，即key.isReadable()不报错并可以进入分支，而key.isWritable()却抛异常的原因；
+					//好像正常情况下SelectionKey.isWritable()一直是true的，SelectionKey.isReadable()则是在客户端返回的情况下是true，这就容易造成如下情况：
+					//readable在有返回的时候可用，而writable一直是可用的，那么writable可以一直写，如果client是写收写收的模式，有可能会导致不是所有的数据包都能收到；
+					//这篇文章有一些关于Selector的个人理解，写的比较浅显易懂https://blog.csdn.net/billluffy/article/details/78036998
 					if (key.isReadable()) {
 						//如果注册了SelectionKey.OP_READ并且缓冲区中有未读取的数据，则每次循环都会进入这个isReadable分支；
 						handleReadable(key);
 					}
+//					logger.debug("{}", key.channel());//测试异常点；
 					if (key.isWritable()) {
 						//如果注册了SelectionKey.OP_WRITE并且没写过，则每次循环都会进入这个isWritable分支(?)
-						socketChannel = (SocketChannel)key.channel();
-						logger.debug("The key {} with {} is writable", key, key.channel());
+						if (countTimeWrite <= thresholdTimeWrite) { // TODO: testing
+							handleWritable(key);
+							++countTimeWrite;
+						}
+						else {
+							if ((key.interestOps() & SelectionKey.OP_WRITE) > 0) {
+								key.interestOps(key.interestOps() & ~SelectionKey.OP_WRITE);
+							}
+						}
 					}
 				}
 				Thread.sleep(1000l);
@@ -137,10 +144,42 @@ public class SelectorServerHandler implements ControllableRunnable {
 		}
 	}
 	
-	private void handleReadable(SelectionKey key) {
-		SocketChannel socketChannel = (SocketChannel)key.channel();
-		ByteBuffer buffer = ByteBuffer.allocate(LENGTH_SEGMENT);
+	private void handleAcceptable(SelectionKey key) {
+		ServerSocketChannel serverSocketChannel = (ServerSocketChannel)key.channel();//should be the same one as the previous server channel
 		try {
+			SocketChannel socketChannel = serverSocketChannel.accept();
+			socketChannel.configureBlocking(false);
+			SocketAddress clientAddress = socketChannel.getRemoteAddress();
+			SelectionKey keyTmp = socketChannel.register(selector, SelectionKey.OP_READ | SelectionKey.OP_WRITE);
+			if (clients.size() >= MAX_CONN) {
+				
+			}
+			else if (clients.get(clientAddress) != null) {
+				
+			}
+			else if (clients.get(clientAddress) == null) {
+				clients.put(clientAddress, socketChannel);
+			}
+			else {
+				// TODO: 
+			}
+			logger.debug("The key {} with {} is acceptable, and channel key {}", key, System.identityHashCode(key.channel()), keyTmp);
+		} 
+		catch (IOException e) {
+			logger.error("Exception occurs when trying to accept new client. ", e);
+			handleAcceptableException(serverSocketChannel, e);
+		}
+	}
+	
+	private void handleAcceptableException(ServerSocketChannel serverSocketChannel, IOException e) {
+		
+	}
+	
+	private void handleReadable(SelectionKey key) {
+		SocketChannel socketChannel = null;
+		try {
+			socketChannel = (SocketChannel)key.channel();
+			ByteBuffer buffer = ByteBuffer.allocate(LENGTH_SEGMENT);
 			socketChannel.read(buffer);
 			logger.debug("The key {} with {} is readable: {}", key, key.channel(), buffer);
 		} 
@@ -148,15 +187,39 @@ public class SelectorServerHandler implements ControllableRunnable {
 			logger.error("Exception occured when reading data from {} using key {}. ", socketChannel, key, e);
 			handleReadableException(socketChannel, e);
 		}
+		catch (RuntimeException e) {
+			logger.error("Other exception occured when reading data from {} using key {}. ", socketChannel, key, e);
+		}
 	}
 	
-	private void handleReadableException(SocketChannel socketChannel, IOException e) {
+	private void handleReadableException(SocketChannel socketChannel, Exception e) {
 		try {
-			socketChannel.close();
+			if (socketChannel != null) {
+				socketChannel.close();
+			}
 		} 
 		catch (IOException ioe) {
 			logger.error("Exception occured when trying to close channel for .", e);
 		}
+	}
+	
+	private void handleWritable(SelectionKey key) {
+		SocketChannel socketChannel = null;
+		try {
+//			if (key.isValid()) {
+				socketChannel = (SocketChannel)key.channel();
+				ByteBuffer buffer = ByteBuffer.allocate(LENGTH_SEGMENT);
+				buffer.putLong(111l);
+				int countBytesWrite = socketChannel.write(buffer);
+				logger.debug("The key {} with {} is writable: {}, {}", key, key.channel(), countBytesWrite, buffer);
+//			}
+		} 
+		catch (IOException e) {
+			logger.error("Exception occured when writing data into {} using key {}. ", socketChannel, key, e);
+		}
+		catch (RuntimeException e) {
+			logger.error("Other exception occured when writing data into {} using key {}. ", socketChannel, key, e);
+		} 
 	}
 
 	@Override

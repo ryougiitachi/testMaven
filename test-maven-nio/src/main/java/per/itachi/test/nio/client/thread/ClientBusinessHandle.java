@@ -34,6 +34,9 @@ public class ClientBusinessHandle implements ClientRunnable {
 
 	@Override
 	public void run() {
+		int times = 5;
+		int count = 0;
+		
 		InetAddress serverIP = config.getBasic().getServerIP();
 		int serverPort = config.getBasic().getServerPort();
 		try {
@@ -71,13 +74,29 @@ public class ClientBusinessHandle implements ClientRunnable {
 				dataRequest = new TransactionData(config, 8003);
 				handleBusinessPulse(mapRequest);
 				dataRequest.parseParamsToBytes(mapRequest);
+				log.debug("writing... ");
 				dataRequest.write(sos);
 				log.debug("write");
 				
 				//Just be lazy
-				sis.read(bytesResponse);
-				log.debug("read");
+				log.debug("reading... ");
+				int countBytesRead = sis.read(bytesResponse);
+				log.debug("read {} bytes", countBytesRead);
+				
+				log.debug("Sleep {} milliseconds. ", config.getBasic().getInterval());
 				Thread.sleep(config.getBasic().getInterval());
+				
+				//TODO: test code
+				++count;
+				if (count >= times) {
+					log.debug("Start clearing buffer. ");
+					while (countBytesRead > 0) {
+						log.debug("reading... ");
+						countBytesRead = sis.read(bytesResponse);
+						log.debug("read {} bytes", countBytesRead);
+					}
+					break;
+				}
 			}
 		} 
 		catch (IOException e) {
