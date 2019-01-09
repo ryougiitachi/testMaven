@@ -7,6 +7,8 @@ import java.util.concurrent.ConcurrentMap;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import io.netty.channel.Channel;
+import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.socket.SocketChannel;
 
@@ -34,5 +36,26 @@ public class TestServerChannelInitializer extends ChannelInitializer<SocketChann
 		else {
 			
 		}
+	}
+
+	@Override
+	public void handlerRemoved(ChannelHandlerContext ctx) throws Exception {
+		Channel ch = ctx.channel();
+		SocketAddress localAddress = ch.localAddress();
+		SocketAddress remoteAddress = ch.remoteAddress();
+		SocketChannel channel = clients.get(remoteAddress);
+		if (channel != null) {
+			clients.remove(remoteAddress);
+			if (channel.equals(ch)) {
+				
+			}
+			else {
+				
+			}
+		}
+		else {
+			
+		}
+		logger.info("The local address {} has removed {} with channel {}. ", localAddress, remoteAddress, ch);
 	}
 }
