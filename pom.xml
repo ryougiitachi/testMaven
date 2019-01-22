@@ -38,9 +38,10 @@
 		<apache.struts2.version>2.5.16</apache.struts2.version>
 		<apache.freemarker.version>2.3.28</apache.freemarker.version>
 		<commons.lang3.version>3.7</commons.lang3.version>
-		<spring.version>4.3.17.RELEASE</spring.version>
-		<spring.security.version/>
+		<spring.version>5.1.2.RELEASE</spring.version>
+		<spring.security.version>5.1.2.RELEASE</spring.security.version>
 		<spring.boot.version>2.1.0.RELEASE</spring.boot.version>
+		<spring.kafka.version>2.2.3.RELEASE</spring.kafka.version>
 		<netty.version>4.1.32.Final</netty.version>
 		<jasypt.version>1.9.2</jasypt.version>
 		<pinyin4j.version>2.5.1</pinyin4j.version>
@@ -60,6 +61,7 @@
 		<module>test-maven-jasypt</module>
 		<module>test-maven-nio</module>
 		<module>test-maven-ftp</module>
+		<module>test-maven-mq</module>
 	</modules>
 	
 	<dependencyManagement>
@@ -194,6 +196,11 @@
 				<groupId>org.springframework</groupId>
 				<artifactId>spring-aop</artifactId>
 				<version>${spring.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.springframework.kafka</groupId>
+				<artifactId>spring-kafka</artifactId>
+				<version>${spring.kafka.version}</version>
 			</dependency>
 			<!-- struts -->
 			<dependency>
