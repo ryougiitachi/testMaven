@@ -1,0 +1,14 @@
+rem 启动zookeeper
+start "zookeeper" bin\zookeeper-server-start.bat config/zookeeper.properties
+rem 启动kafka 
+start "kafka server" bin\kafka-server-start.bat config/server.properties 
+rem 创建topic
+bin\kafka-topics.bat --create --zookeeper localhost:2181 --replication-factor 1 --partitions 1 --topic mykafka
+rem 查看topic
+bin\kafka-topics.bat --list --zookeeper localhost:2181
+rem 生产者producer
+start "kafka producer" bin\kafka-console-producer.bat --broker-list localhost:9092 --topic mykafka
+rem 消费者consumer
+start "kafka consumer" bin\kafka-console-consumer.bat --bootstrap-server localhost:9092 --topic mykafka --from-beginning
+
+
