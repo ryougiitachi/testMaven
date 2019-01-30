@@ -5,6 +5,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.PropertySource;
+import org.springframework.web.socket.server.standard.ServerEndpointExporter;
 
 import per.itachi.test.springboot.bean.TestSpringLifeCycleBean;
 
@@ -17,6 +18,12 @@ public class Application {
 	public TestSpringLifeCycleBean testSpringLifeCycleBean() {
 		return new TestSpringLifeCycleBean();
 	}
+	
+	@Bean
+	public ServerEndpointExporter serverEndpointExporter() {
+		return new ServerEndpointExporter();
+	}
+
 	
 	public static void main(String[] args) {
 		SpringApplication.run(Application.class, args);
