@@ -127,7 +127,7 @@ public class SortUtils {
 		while (low < high) {
 			//如果使用交换的方式，临时变量需要重新定义，不能和枢轴的那个弄混了；
 //			T tmp;
-			// Firstly, puts less elements into the left of the pivot; puts one element each time; 
+			// Firstly, puts small elements into the left of the pivot; puts one element each time; 
 			while (low < high && pivot.compareTo(src[high]) <= 0) {
 				--high;
 			}
@@ -136,7 +136,7 @@ public class SortUtils {
 //			src[low] = src[high];
 //			src[high] = tmp;
 			src[low] = src[high];
-			// And then, puts larger elements into the right of the pivot; puts one element each time; 
+			// And then, puts large elements into the right of the pivot; puts one element each time; 
 			while (low < high && pivot.compareTo(src[low]) >= 0) {
 				++low;
 			}
