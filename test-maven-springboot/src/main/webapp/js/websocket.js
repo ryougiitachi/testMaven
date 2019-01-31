@@ -2,8 +2,9 @@
  * 
  */
 
+//建立
 var websocket = null;
-var strURL = "ws://127.0.0.1:8081/springboot/mvc/websocket";
+var strURL = "ws://127.0.0.1:8081/springboot/websocket";
 if(window.WebSocket) {//"WebSocket" in window
 	console.info("Initialising websocket with URL ", strURL);
 	websocket = new WebSocket(strURL);
@@ -24,3 +25,8 @@ else {
 	console.error("浏览器不支持websocket.");
 }
 
+//发送
+websocket.send();
+
+//关闭
+websocket.close();
