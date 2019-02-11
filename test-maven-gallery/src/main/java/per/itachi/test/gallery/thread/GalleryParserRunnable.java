@@ -69,7 +69,7 @@ public class GalleryParserRunnable implements ControllableRunnable {
 					DBAccessConnUtils.connect();
 					history = DBAccessConnUtils.getGalleryHistoryByWebPath(strWebPath, website.getId());
 					if (history != null && history.getStatus() == GalleryConstants.PASER_STATUS_COMPLETED) {
-						logger.info("{} has been downloaded before, {}.", strUrlLink, history.getTitle());
+						logger.info("{} downloaded before, {}.", strUrlLink, history.getTitle());
 						exit = true;
 					}
 					else {
