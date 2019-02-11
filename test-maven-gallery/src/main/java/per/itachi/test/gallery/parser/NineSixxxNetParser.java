@@ -4,7 +4,10 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
@@ -55,7 +58,7 @@ public class NineSixxxNetParser implements Parser {
 		logger.info("Start parsing {}", strUrlLink);
 		Map<String, String> mapHeaders = GalleryUtils.getDefaultRequestHeaders();
 		String strTmpHtmlPath = GalleryUtils.loadHtmlByURL(strUrlLink, mapHeaders);
-		List<NineSixxxNetPage> listTmpFilePath = new ArrayList<>();
+		List<NineSixxxNetPage> listTmpHtmlPath = new ArrayList<>();
 		List<String> listImageLink = new ArrayList<>();
 		String strPicDirPath = null;
 		NineSixxxNetPage page = null;
@@ -63,20 +66,23 @@ public class NineSixxxNetParser implements Parser {
 			page = new NineSixxxNetPage();
 			page.setCurrUrlLink(strUrlLink);
 			page.setTmpFilePath(strTmpHtmlPath);
-			listTmpFilePath.add(page);
+			listTmpHtmlPath.add(page);
 			strPicDirPath = generatePicDirectory(strTmpHtmlPath);
 			if (strPicDirPath != null) {
-				loadTmpHtmlList(strTmpHtmlPath, listTmpFilePath, mapHeaders);// download html
-				loadImageLinkList(listTmpFilePath, listImageLink);// load image links
+				loadTmpHtmlList(strTmpHtmlPath, listTmpHtmlPath, mapHeaders);// download html
+				loadImageLinkList(listTmpHtmlPath, listImageLink);// load image links
 				downloadImages(listImageLink, mapHeaders, strPicDirPath);//download imagaes
 			}
 		} 
 		catch (IOException e) {
-			logger.error(e.getMessage(), e);
+			logger.error("Error occured when downloading pictures from {}. ", strTmpHtmlPath, e);
 		}
 		logger.info("Finish parsing {}", strUrlLink);
 	}
 	
+	/**
+	 * generate the directory where pictures will be placed. 
+	 * */
 	private String generatePicDirectory(String tmpHtmlPath) throws IOException {
 		StringBuilder builder = new StringBuilder();
 		File fileTmpHtmlPath = new File(tmpHtmlPath);
@@ -84,7 +90,7 @@ public class NineSixxxNetParser implements Parser {
 		Element elementTitle = document.selectFirst(SELECTOR_TITLE);
 		String strTitle = this.title = elementTitle.text();
 		String strPicDirPath = GalleryUtils.joinStrings(builder, 
-				GalleryConstants.DEFAULT_PICTURE_PATH, File.separator, 
+				GalleryConstants.DEFAULT_PICTURE_PATH, File.separator, getDateString(), 
 				strTitle, File.separator);
 		File filePicDirPath = new File(strPicDirPath);
 		if (filePicDirPath.exists()) {
@@ -113,6 +119,14 @@ public class NineSixxxNetParser implements Parser {
 			logger.error(e.getMessage(), e);
 		}
 		return strPicDirPath;
+	}
+	
+	private String getDateString() {
+		String strDate = null;
+		Calendar calendar = Calendar.getInstance();
+		DateFormat sdf = new SimpleDateFormat("yyyyMMdd");
+		strDate = sdf.format(calendar.getTime());
+		return strDate;
 	}
 	
 	private void loadTmpHtmlList(String initTmpHtmlPath, List<NineSixxxNetPage> tmpFilePaths, Map<String, String> headers) throws IOException {
