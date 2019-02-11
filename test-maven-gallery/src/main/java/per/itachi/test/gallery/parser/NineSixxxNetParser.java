@@ -55,7 +55,7 @@ public class NineSixxxNetParser implements Parser {
 	@Override
 	public void execute() {
 		String strUrlLink = this.urlLink;
-		logger.info("Start parsing {}", strUrlLink);
+		logger.info("Start parsing NineSixxxNet URL {}", strUrlLink);
 		Map<String, String> mapHeaders = GalleryUtils.getDefaultRequestHeaders();
 		String strTmpHtmlPath = GalleryUtils.loadHtmlByURL(strUrlLink, mapHeaders);
 		List<NineSixxxNetPage> listTmpHtmlPath = new ArrayList<>();

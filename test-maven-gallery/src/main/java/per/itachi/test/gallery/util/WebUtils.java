@@ -1,5 +1,6 @@
 package per.itachi.test.gallery.util;
 
+import java.text.MessageFormat;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -35,5 +36,17 @@ public class WebUtils {
 			return GalleryUtils.joinStrings(builder, strCurrPath, urlPath);
 		}
 	}
-
+	
+	public static String getCompleteUrlLink(String urlPath, String baseUrl, String currUrl) {
+		if (isCompleteUrlLink(urlPath)) {
+			return urlPath;
+		} 
+		else if (urlPath.startsWith("/")) {
+			return MessageFormat.format("{0}{1}", baseUrl, urlPath);
+		}
+		else {
+			String strCurrPath = currUrl.substring(0, currUrl.lastIndexOf("/") + 1);
+			return MessageFormat.format("{0}{1}", strCurrPath, urlPath);
+		}
+	}
 }
