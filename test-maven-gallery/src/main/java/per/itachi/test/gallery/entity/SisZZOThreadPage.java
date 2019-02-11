@@ -1,0 +1,34 @@
+package per.itachi.test.gallery.entity;
+
+public class SisZZOThreadPage {
+	
+	private String title;
+	
+	private String urlLink;
+	
+	private String htmlFilePath;
+
+	public String getTitle() {
+		return title;
+	}
+
+	public void setTitle(String title) {
+		this.title = title;
+	}
+
+	public String getUrlLink() {
+		return urlLink;
+	}
+
+	public void setUrlLink(String urlLink) {
+		this.urlLink = urlLink;
+	}
+
+	public String getHtmlFilePath() {
+		return htmlFilePath;
+	}
+
+	public void setHtmlFilePath(String htmlFilePath) {
+		this.htmlFilePath = htmlFilePath;
+	}
+}

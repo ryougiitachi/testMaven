@@ -3,8 +3,12 @@
 	<website>
 		<id></id>
 		<name></name>
+		<charset></charset>
 		<parser-class-name></parser-class-name>
 		<domains>
+			<value></value>
+			<value></value>
+			<value></value>
 			<value></value>
 			<value></value>
 		</domains>
