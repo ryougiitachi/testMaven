@@ -27,15 +27,17 @@ public class SisZZOParser implements Parser {
 	
 	private static final String WEBSITE_DIRECTORY_NAME = "SisZZO";//TODO
 	
-	private static final String SELECTOR_TITLE_LIST = "";
+	private static final String SELECTOR_TITLE_LIST = //TODO
+			"div#wrapper div div.mainbox.threadlist form table#forum_143 tbody";
 	
-	private static final String SELECTOR_THREAD_LINK = "";
+	private static final String SELECTOR_THREAD_LINK = "tr th.new span a";
 	
-	private static final String SELECTOR_THREAD_CREATOR = "";
+	private static final String SELECTOR_THREAD_CREATOR = "tr td.author cite a";
 	
-	private static final String SELECTOR_NEXT_PAGE = "";
+	private static final String SELECTOR_NEXT_PAGE = "div#wrapper div div.pages_btns div.pages a.next";
 	
-	private static final String SELECTOR_THREAD_CDATE = "";
+	private static final String SELECTOR_THREAD_CDATE = 
+			"div#wrapper div div.mainbox.viewthread table tbody tr td.postcontent div.postinfo";
 	
 	private static final String SELECTOR_THREAD_VIDEO_TITLE = "";//TODO 
 	
@@ -45,7 +47,7 @@ public class SisZZOParser implements Parser {
 	
 	private static final String PATTERN_TITLE = "";
 	
-	private static final String FORMAT_THREAD_CDATE = "yyyy-MM-dd HH:mm:ss";
+	private static final String FORMAT_THREAD_CDATE = "发表于 yyyy-M-d HH:mm:ss";//TODO
 	
 	private final Logger logger = LoggerFactory.getLogger(SisZZOParser.class);
 	
