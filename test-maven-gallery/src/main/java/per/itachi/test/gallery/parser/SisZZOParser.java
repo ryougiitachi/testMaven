@@ -8,6 +8,8 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
@@ -45,6 +47,8 @@ public class SisZZOParser implements Parser {
 	
 	private static final String PATTERN_TITLE = "";
 	
+	private static final String PATTERN_HREF_UID = "[\\w-/]+\\?([\\w=]+\\&)*uid=([0-9]+)(\\&[\\w=]+)*";
+	
 	private static final String FORMAT_THREAD_CDATE = "yyyy-MM-dd HH:mm:ss";
 	
 	private final Logger logger = LoggerFactory.getLogger(SisZZOParser.class);
@@ -68,11 +72,12 @@ public class SisZZOParser implements Parser {
 	}
 	
 	/**
-	 * download title pages. 
+	 * download title pages and load thread links. 
 	 * */
 	private void loadTitleListHtml(List<SisZZOThreadPage> threadHtmls) {
 		String strNextPageUrlLink = this.urlLink;
 		Elements elementsNextPage = null;
+		String strUID = "";//TODO
 		Map<String, String> mapHeaders = GalleryUtils.getDefaultRequestHeaders();
 		try {
 			do {
@@ -83,9 +88,9 @@ public class SisZZOParser implements Parser {
 				for (Element elementTitle : elementsTitleList) {
 					Element elementLink = elementTitle.selectFirst(SELECTOR_THREAD_LINK);
 					Element elementCreator = elementTitle.selectFirst(SELECTOR_THREAD_CREATOR);
-					if (elementLink != null && elementCreator != null && elementCreator.hasText()) {//TODO: post creator 
+					if (elementLink != null && elementCreator != null && isSpecificUser(elementCreator, strUID)) {//TODO: post creator 
 						SisZZOThreadPage page = new SisZZOThreadPage();
-						page.setUrlLink(elementLink.text());
+						page.setTitle(elementLink.text());
 						page.setUrlLink(elementLink.attr("href"));
 						threadHtmls.add(page);
 					}
@@ -104,6 +109,24 @@ public class SisZZOParser implements Parser {
 		} 
 		catch (IOException e) {
 			logger.error("Error occured when parsing title list. ", e);
+		}
+	}
+	
+	private boolean isSpecificUser(Element creator, String uid) {
+		String strLink = creator.attr("href");
+		Pattern pattern = Pattern.compile(PATTERN_HREF_UID);//TODO
+		Matcher matcher = pattern.matcher(strLink);
+		if (matcher.matches()) {
+			String strUID = matcher.group(2);
+			if (uid.equals(strUID)) {
+				return true;
+			}
+			else {
+				return false;
+			}
+		}
+		else {
+			return false;
 		}
 	}
 	

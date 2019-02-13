@@ -6,6 +6,8 @@ public class GalleryWebsite {
 	
 	private String name;
 	
+	private String charset;
+	
 	private String parserClassName;
 
 	private GalleryDomains domains;
@@ -27,6 +29,14 @@ public class GalleryWebsite {
 
 	public void setName(String name) {
 		this.name = name;
+	}
+
+	public String getCharset() {
+		return charset;
+	}
+
+	public void setCharset(String charset) {
+		this.charset = charset;
 	}
 
 	public String getParserClassName() {

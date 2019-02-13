@@ -35,16 +35,16 @@ public class MainFrameEntry {
 			UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
 		} 
 		catch (ClassNotFoundException e) {
-			logger.error(e.getMessage(), e);
+			logger.error("Error occured when initialising main frame. ", e);
 		} 
 		catch (InstantiationException e) {
-			logger.error(e.getMessage(), e);
+			logger.error("Error occured when initialising main frame. ", e);
 		} 
 		catch (IllegalAccessException e) {
-			logger.error(e.getMessage(), e);
+			logger.error("Error occured when initialising main frame. ", e);
 		} 
 		catch (UnsupportedLookAndFeelException e) {
-			logger.error(e.getMessage(), e);
+			logger.error("Error occured when initialising main frame. ", e);
 		}
 		
 		logger.info("Initialising blocking queue... ");

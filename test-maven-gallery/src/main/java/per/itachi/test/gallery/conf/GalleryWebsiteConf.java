@@ -37,6 +37,7 @@ public class GalleryWebsiteConf {
 		digester.addObjectCreate("websites/website", GalleryWebsite.class);
 		digester.addBeanPropertySetter("websites/website/id", "id");
 		digester.addBeanPropertySetter("websites/website/name", "name");
+		digester.addBeanPropertySetter("websites/website/charset", "charset");
 		digester.addBeanPropertySetter("websites/website/parser-class-name", "parserClassName");
 		digester.addObjectCreate("websites/website/domains", GalleryDomains.class);
 		digester.addCallMethod("websites/website/domains/value", "addDomain", 1);
