@@ -1,7 +1,9 @@
 package per.itachi.test.gallery.parser;
 
+import java.io.BufferedWriter;
 import java.io.File;
 import java.io.IOException;
+import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -25,7 +27,7 @@ import per.itachi.test.gallery.util.WebUtils;
 
 public class SisZZOParser implements Parser {
 	
-	private static final String WEBSITE_CHARSET = "";//TODO
+	private static final String WEBSITE_CHARSET = "GBK";//TODO
 	
 	private static final String WEBSITE_DIRECTORY_NAME = "SisZZO";//TODO
 	
@@ -40,6 +42,8 @@ public class SisZZOParser implements Parser {
 	
 	private static final String SELECTOR_THREAD_CDATE = 
 			"div#wrapper div div.mainbox.viewthread table tbody tr td.postcontent div.postinfo";
+	
+	private static final String SELECTOR_THREAD_CONTENT = "";//TODO 
 	
 	private static final String SELECTOR_THREAD_VIDEO_TITLE = "";//TODO 
 	
@@ -67,10 +71,9 @@ public class SisZZOParser implements Parser {
 	@Override
 	public void execute() {
 		logger.info("Start parsing SisZZO URL {}", this.urlLink);
-		List<SisZZOThreadPage> listThreadHtml = new ArrayList<>(512);
+		List<SisZZOThreadPage> listThreadHtml = new ArrayList<>(1000);
 		loadTitleListHtml(listThreadHtml);//load title pages and thread url
 		loadThreadHtml(listThreadHtml);//load thread pages and thread pictures. 
-		
 	}
 	
 	/**
@@ -148,6 +151,7 @@ public class SisZZOParser implements Parser {
 				Elements elementsTitle = document.select(SELECTOR_THREAD_VIDEO_TITLE);//TODO 
 				Elements elementsPic = document.select(SELECTOR_THREAD_VIDEO_SNAPSHOT);//TODO 
 				Path dirThreadTitle = createThreadDirectory(page.getTitle(), dirWebsite);
+				createReadmeFile(document, dirThreadTitle);
 				if (elementsTitle.size() > 0 && elementsPic.size() > 0) {//TODO 
 					for (int i = 0; i < elementsTitle.size(); i++) {
 						Element elementTitle = elementsTitle.get(i);
@@ -170,6 +174,25 @@ public class SisZZOParser implements Parser {
 	private Path createThreadDirectory(String threadTitle, Path mainDir) throws IOException {
 		Path dirThreadTitle = Paths.get(mainDir.toString(), threadTitle);
 		return Files.createDirectory(dirThreadTitle);
+	}
+	
+	private void createReadmeFile(Document document, Path threadDir) {
+		try {
+			Path fileReadme = Files.createFile(Paths.get(threadDir.toString(), "reademe.txt"));
+			Element elementContent = document.selectFirst(SELECTOR_THREAD_CONTENT);
+			if (elementContent != null) {
+				try(BufferedWriter bw = Files.newBufferedWriter(fileReadme, Charset.defaultCharset())) {
+					bw.write(elementContent.text());
+					bw.flush();
+				} 
+				catch (IOException e) {
+					logger.error("Failed to write readme.txt for {}", threadDir, e);
+				}
+			}
+		} 
+		catch (IOException e) {
+			logger.error("Failed to create readme.txt for {}", threadDir, e);
+		}
 	}
 
 	@Override
