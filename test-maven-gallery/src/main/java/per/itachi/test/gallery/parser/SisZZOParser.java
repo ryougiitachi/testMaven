@@ -49,7 +49,7 @@ public class SisZZOParser implements Parser {
 	
 	private static final String SELECTOR_THREAD_VIDEO_SNAPSHOT = "";//TODO 
 	
-	private static final String SPECIFIC_CREATOR = "";
+	private static final String SPECIFIC_CREATOR_UID = "";
 	
 	private static final String PATTERN_TITLE = "";
 	
@@ -82,7 +82,7 @@ public class SisZZOParser implements Parser {
 	private void loadTitleListHtml(List<SisZZOThreadPage> threadHtmls) {
 		String strNextPageUrlLink = this.urlLink;
 		Elements elementsNextPage = null;
-		String strUID = "";//TODO
+		String strUID = SPECIFIC_CREATOR_UID;//TODO
 		Map<String, String> mapHeaders = GalleryUtils.getDefaultRequestHeaders();
 		try {
 			do {
@@ -156,7 +156,8 @@ public class SisZZOParser implements Parser {
 					for (int i = 0; i < elementsTitle.size(); i++) {
 						Element elementTitle = elementsTitle.get(i);
 						Element elementPic = elementsPic.get(i);
-//						String strImgPath = GalleryUtils.loadFileByURL(elementPic, mapHeaders, buffer, dirThreadTitle.toString(), builder);
+						String strPicUrl = WebUtils.getCompleteUrlLink(builder, elementPic.text(), baseUrl, page.getUrlLink());
+						String strImgPath = GalleryUtils.loadFileByURL(strPicUrl, mapHeaders, getPicFileName(strPicUrl), buffer, dirThreadTitle.toString(), builder);
 					}
 				}
 			}
@@ -193,6 +194,18 @@ public class SisZZOParser implements Parser {
 		catch (IOException e) {
 			logger.error("Failed to create readme.txt for {}", threadDir, e);
 		}
+	}
+	
+	private String getPicFileName(String urlPicture) {
+		if (urlPicture == null) {
+			return GalleryUtils.EMPTY_STRING;
+		}
+		Pattern patternUrlFileName01 = Pattern.compile(WebUtils.REGEX_URL_FILENAME);
+		Matcher matcherUrlFileName01 = patternUrlFileName01.matcher(urlPicture);
+		if (matcherUrlFileName01.find()) {
+			return matcherUrlFileName01.group(1);
+		}
+		return GalleryUtils.EMPTY_STRING;
 	}
 
 	@Override

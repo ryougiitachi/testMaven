@@ -71,8 +71,6 @@ public class GalleryUtils {
 		String strInitialTmpFilePath = null;
 		URL url = null;
 		HttpURLConnection connection = null;
-		InputStream is = null;
-		OutputStream os = null;
 		byte[] buffer = new byte[8192];
 		int count = 0;
 		boolean isSuccessful = false;
@@ -81,53 +79,36 @@ public class GalleryUtils {
 			url = new URL(strURL);
 			connection = (HttpURLConnection)url.openConnection(Proxy.NO_PROXY);
 			connection.setRequestMethod(GalleryConstants.HTTP_METHOD_GET);
-			connection.setRequestProperty(GalleryConstants.HTTP_HEADER_USER_AGENT, headers.get(GalleryConstants.HTTP_HEADER_USER_AGENT));
-			connection.setRequestProperty(GalleryConstants.HTTP_HEADER_ACCEPT, headers.get(GalleryConstants.HTTP_HEADER_ACCEPT));
-			connection.setRequestProperty(GalleryConstants.HTTP_HEADER_ACCEPT_ENCODING, headers.get(GalleryConstants.HTTP_HEADER_ACCEPT_ENCODING));
-			connection.setRequestProperty(GalleryConstants.HTTP_HEADER_CACHE_CONTROL, headers.get(GalleryConstants.HTTP_HEADER_CACHE_CONTROL));
+			setHttpRequestHeaders(connection, headers);
 			connection.connect();
 			logResponseHeaders(connection);
 			strCompressSuffix = getContentEncoding(connection);
 			strInitialTmpFilePath = getInitialTmpFilePath(builder, weblink, strCompressSuffix);
-			is = connection.getInputStream();
-			os = new BufferedOutputStream(new FileOutputStream(strInitialTmpFilePath));
-			while ((count = is.read(buffer)) > 0) {
-				os.write(buffer, 0, count);
+			try(InputStream is = connection.getInputStream();
+					OutputStream os = new BufferedOutputStream(new FileOutputStream(strInitialTmpFilePath));) {
+				while ((count = is.read(buffer)) > 0) {
+					os.write(buffer, 0, count);
+				}
+				isSuccessful = true;
+			} 
+			catch (IOException e) {
+				logger.error("Error occured when writing stream into {}. ", strInitialTmpFilePath, e);
+				isSuccessful = false;
 			}
-			isSuccessful = true;
 		} 
 		catch (MalformedURLException e) {
-			logger.error(e.getMessage(), e);
+			logger.error("There is something with URL {}. ", strURL, e);
 			isSuccessful = false;
 		}
 		catch (IOException e) {
-			logger.error(e.getMessage(), e);
+			logger.error("Error occured when initialising connection {}. ", strURL, e);
 			isSuccessful = false;
 		}
 		finally {
-			if (is != null) {
-				try {
-					is.close();
-					is = null;
-				} 
-				catch (IOException e) {
-					logger.error(e.getMessage(), e);
-				}
-			}
-			if (os != null) {
-				try {
-					os.close();
-					os = null;
-				} 
-				catch (IOException e) {
-					logger.error(e.getMessage(), e);
-				}
-			}
 			if (connection != null) {
 				connection.disconnect();
 				connection = null;
 			}
-			
 		}
 		if (!isSuccessful) {
 			return null;
@@ -160,29 +141,33 @@ public class GalleryUtils {
 	}
 	
 	public static String loadFileByURL(String urlLink, Map<String, String> headers, byte[] buffer, String dir, StringBuilder builder) {
-		String strFilePath = GalleryUtils.joinStrings(builder, dir, getFileNameViaUrl(urlLink));
+		return loadFileByURL(urlLink, headers, getFileNameViaUrl(urlLink), buffer, dir, builder);
+	}
+	
+	public static String loadFileByURL(String urlLink, Map<String, String> headers, String outputFileName, byte[] buffer, String dir, StringBuilder builder) {
+		String strFilePath = GalleryUtils.joinStrings(builder, dir, outputFileName);
 		URL url = null;
 		HttpURLConnection connection = null;
-		InputStream is = null;
-		OutputStream os = null;
 		int count = 0;
 		boolean isSuccessful = false;
 		try {
 			url = new URL(urlLink);
 			connection = (HttpURLConnection)url.openConnection(Proxy.NO_PROXY);
 			connection.setRequestMethod(GalleryConstants.HTTP_METHOD_GET);
-			connection.setRequestProperty(GalleryConstants.HTTP_HEADER_USER_AGENT, headers.get(GalleryConstants.HTTP_HEADER_USER_AGENT));
-			connection.setRequestProperty(GalleryConstants.HTTP_HEADER_ACCEPT, headers.get(GalleryConstants.HTTP_HEADER_ACCEPT));
-			connection.setRequestProperty(GalleryConstants.HTTP_HEADER_ACCEPT_ENCODING, headers.get(GalleryConstants.HTTP_HEADER_ACCEPT_ENCODING));
-			connection.setRequestProperty(GalleryConstants.HTTP_HEADER_CACHE_CONTROL, headers.get(GalleryConstants.HTTP_HEADER_CACHE_CONTROL));
+			setHttpRequestHeaders(connection, headers);
 			connection.connect();
 			logResponseHeaders(connection);
-			is = connection.getInputStream();
-			os = new BufferedOutputStream(new FileOutputStream(strFilePath));
-			while ((count = is.read(buffer)) > 0) {
-				os.write(buffer, 0, count);
+			try(InputStream is = connection.getInputStream();
+					OutputStream os = new BufferedOutputStream(new FileOutputStream(strFilePath));) {
+				while ((count = is.read(buffer)) > 0) {
+					os.write(buffer, 0, count);
+				}
+				isSuccessful = true;
+			} 
+			catch (IOException e) {
+				logger.error("Error occured when writing stream into {}. ", strFilePath, e);
+				isSuccessful = false;
 			}
-			isSuccessful = true;
 		} 
 		catch (MalformedURLException e) {
 			logger.error(e.getMessage(), e);
@@ -193,24 +178,6 @@ public class GalleryUtils {
 			isSuccessful = false;
 		}
 		finally {
-			if (is != null) {
-				try {
-					is.close();
-					is = null;
-				} 
-				catch (IOException e) {
-					logger.error(e.getMessage(), e);
-				}
-			}
-			if (os != null) {
-				try {
-					os.close();
-					os = null;
-				} 
-				catch (IOException e) {
-					logger.error(e.getMessage(), e);
-				}
-			}
 			if (connection != null) {
 				connection.disconnect();
 				connection = null;
@@ -222,6 +189,15 @@ public class GalleryUtils {
 		else {
 			return null;
 		}
+	
+		
+	}
+	
+	private static void setHttpRequestHeaders(HttpURLConnection connection, Map<String, String> headers) {
+		connection.setRequestProperty(GalleryConstants.HTTP_HEADER_USER_AGENT, headers.get(GalleryConstants.HTTP_HEADER_USER_AGENT));
+		connection.setRequestProperty(GalleryConstants.HTTP_HEADER_ACCEPT, headers.get(GalleryConstants.HTTP_HEADER_ACCEPT));
+		connection.setRequestProperty(GalleryConstants.HTTP_HEADER_ACCEPT_ENCODING, headers.get(GalleryConstants.HTTP_HEADER_ACCEPT_ENCODING));
+		connection.setRequestProperty(GalleryConstants.HTTP_HEADER_CACHE_CONTROL, headers.get(GalleryConstants.HTTP_HEADER_CACHE_CONTROL));
 	}
 	
 	private static void logResponseHeaders(URLConnection connection) {
@@ -301,6 +277,9 @@ public class GalleryUtils {
 		return history;
 	}
 	
+	/**
+	 * testing temporary method. 
+	 * */
 	public static void testFinal() {
 		final Object object = null;//if object is modified as static, it says, "only final is permitted".
 		if (object == null) {

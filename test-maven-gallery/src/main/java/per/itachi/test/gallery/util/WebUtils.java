@@ -10,6 +10,8 @@ public class WebUtils {
 	
 	public static final String REGEX_WEBSITE_LINK = "(https?://[\\w-]+(\\.[\\w-]+)*(:\\d+)?)(/[\\w-\\.]+)*";
 	
+	public static final String REGEX_URL_FILENAME = "/?(\\w+\\.\\w+)$";
+	
 	public static String getBaseUrl(String urlPath) {
 		Pattern pattern = Pattern.compile(REGEX_WEBSITE_LINK);
 		Matcher matcher = pattern.matcher(urlPath);
@@ -25,13 +27,13 @@ public class WebUtils {
 	}
 	
 	public static String getCompleteUrlLink(StringBuilder builder, String urlPath, String baseUrl, String currUrl) {
-		if (isCompleteUrlLink(urlPath)) {
+		if (isCompleteUrlLink(urlPath)) {// absolute url - complete website address 
 			return urlPath;
 		} 
-		else if (urlPath.startsWith("/")) {
+		else if (urlPath.startsWith("/")) {// root url - starting with / 
 			return GalleryUtils.joinStrings(builder, baseUrl, urlPath);
 		}
-		else {
+		else {// relative url - not starting with 
 			String strCurrPath = currUrl.substring(0, currUrl.lastIndexOf("/") + 1);
 			return GalleryUtils.joinStrings(builder, strCurrPath, urlPath);
 		}
