@@ -8,6 +8,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.regex.Matcher;
@@ -117,18 +118,15 @@ public class SisZZOParser implements Parser {
 		}
 	}
 	
+	/**
+	 * check whether or not it is specific user. 
+	 * */
 	private boolean isSpecificUser(Element creator, String uid) {
 		String strLink = creator.attr("href");
-		Pattern pattern = Pattern.compile(PATTERN_HREF_UID);//TODO
-		Matcher matcher = pattern.matcher(strLink);
-		if (matcher.matches()) {
-			String strUID = matcher.group(2);
-			if (uid.equals(strUID)) {
-				return true;
-			}
-			else {
-				return false;
-			}
+		Map<String, String> mapParams = getUrlQueryParam(strLink);
+		String strUID = "uid";
+		if (uid.equals(strUID)) {
+			return true;
 		}
 		else {
 			return false;
@@ -154,10 +152,9 @@ public class SisZZOParser implements Parser {
 				createReadmeFile(document, dirThreadTitle);
 				if (elementsTitle.size() > 0 && elementsPic.size() > 0) {//TODO 
 					for (int i = 0; i < elementsTitle.size(); i++) {
-						Element elementTitle = elementsTitle.get(i);
 						Element elementPic = elementsPic.get(i);
 						String strPicUrl = WebUtils.getCompleteUrlLink(builder, elementPic.text(), baseUrl, page.getUrlLink());
-						String strImgPath = GalleryUtils.loadFileByURL(strPicUrl, mapHeaders, getPicFileName(strPicUrl), buffer, dirThreadTitle.toString(), builder);
+						String strImgPath = GalleryUtils.loadFileByURL(strPicUrl, mapHeaders, String.format("%02d-%s", i + 1, getPicFileName(strPicUrl)), buffer, dirThreadTitle.toString(), builder);
 					}
 				}
 			}
@@ -200,16 +197,61 @@ public class SisZZOParser implements Parser {
 		if (urlPicture == null) {
 			return GalleryUtils.EMPTY_STRING;
 		}
-		Pattern patternUrlFileName01 = Pattern.compile(WebUtils.REGEX_URL_FILENAME);
-		Matcher matcherUrlFileName01 = patternUrlFileName01.matcher(urlPicture);
-		if (matcherUrlFileName01.find()) {
-			return matcherUrlFileName01.group(1);
+		//with query parameters
+		Pattern patternUrlFileName = Pattern.compile(WebUtils.REGEX_URL_FILENAME);
+		Matcher matcherUrlFileName = patternUrlFileName.matcher(urlPicture);
+		if (matcherUrlFileName.find()) {
+			return matcherUrlFileName.group(1);
 		}
+		//without query parameters
+		Map<String, String> mapParams = getUrlQueryParam(urlPicture);
 		return GalleryUtils.EMPTY_STRING;
+	}
+	
+	private Map<String, String> getUrlQueryParam(String url) {
+		Map<String, String> mapParams = new HashMap<>();
+		Pattern patternUrlParams = Pattern.compile(GalleryUtils.REGEX_URL_PARAMS);
+		Matcher matcherUrlParams = patternUrlParams.matcher(url);
+		if (matcherUrlParams.find()) {
+			String strParams = matcherUrlParams.group(1);
+			String[] arrayParams = strParams.split("&");
+			for (String strParam : arrayParams) {
+				String[] arrayKeyValue = strParam.split("=");
+				if (arrayKeyValue.length >= 2) {
+					mapParams.put(arrayKeyValue[0], arrayKeyValue[1]);
+				}
+				else {
+					mapParams.put(strParam, GalleryUtils.EMPTY_STRING);
+				}
+			}
+		}
+		return mapParams;
 	}
 
 	@Override
 	public String getTitle() {
 		return null;
+	}
+	
+	public static void main(String[] args) {
+		String strUrl = "http://38.103.161.130/forum/attachment.php?aid=2890054&clickDownload=1";
+		Map<String, String> mapParams = new HashMap<>();
+		Pattern patternUrlParams = Pattern.compile(GalleryUtils.REGEX_URL_PARAMS);
+		Matcher matcherUrlParams = patternUrlParams.matcher(strUrl);
+		if (matcherUrlParams.find()) {
+			String strParams = matcherUrlParams.group(1);
+			System.out.println(strParams);
+			String[] arrayParams = strParams.split("&");
+			for (String strParam : arrayParams) {
+				String[] arrayKeyValue = strParam.split("=");
+				if (arrayKeyValue.length >= 2) {
+					mapParams.put(arrayKeyValue[0], arrayKeyValue[1]);
+					System.out.println(arrayKeyValue[0] + " " + arrayKeyValue[1]);
+				}
+				else {
+					mapParams.put(strParam, GalleryUtils.EMPTY_STRING);
+				}
+			}
+		}
 	}
 }

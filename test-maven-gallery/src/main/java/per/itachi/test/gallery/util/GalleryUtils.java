@@ -31,6 +31,8 @@ public class GalleryUtils {
 	
 	public static final String EMPTY_STRING = "";
 	
+	public static final String REGEX_URL_PARAMS = "/?[\\w-\\.]+\\?([\\w-\\.%=]+(&[\\w-\\.%=]+)*)$";
+	
 	public static String joinStrings(StringBuilder builder, Object... args) {
 		if (builder == null || args == null) {
 			return EMPTY_STRING;
