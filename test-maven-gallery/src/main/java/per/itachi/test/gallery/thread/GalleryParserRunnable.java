@@ -100,6 +100,7 @@ public class GalleryParserRunnable implements ControllableRunnable {
 				long lStartPoint, lEndPoint;
 				try {
 					parser = instantiateNewParser(clazzParser, strUrlLink);
+					parser.setBaseUrl(strBaseUrl);
 					lStartPoint = System.currentTimeMillis();
 					parser.execute();
 					lEndPoint = System.currentTimeMillis();

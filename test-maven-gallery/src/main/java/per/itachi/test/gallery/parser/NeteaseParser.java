@@ -13,6 +13,7 @@ import org.jsoup.select.Elements;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import per.itachi.test.gallery.conf.GalleryWebsite;
 import per.itachi.test.gallery.util.GalleryUtils;
 import per.itachi.test.gallery.util.WebUtils;
 
@@ -60,6 +61,14 @@ public class NeteaseParser implements Parser {
 			elementNextPage = elementsNextPage.first();
 			strNextPageLink = WebUtils.getCompleteUrlLink(builder, elementNextPage.attr("href"), this.baseUrl, strCurrUrl);
 		}
+	}
+
+	@Override
+	public void setBaseUrl(String baseUrl) {
+	}
+
+	@Override
+	public void setGalleryWebsiteConf(GalleryWebsite conf) {
 	}
 
 	@Override

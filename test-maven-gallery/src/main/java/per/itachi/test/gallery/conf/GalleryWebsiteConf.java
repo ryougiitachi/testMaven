@@ -39,6 +39,11 @@ public class GalleryWebsiteConf {
 		digester.addBeanPropertySetter("websites/website/name", "name");
 		digester.addBeanPropertySetter("websites/website/charset", "charset");
 		digester.addBeanPropertySetter("websites/website/parser-class-name", "parserClassName");
+		digester.addBeanPropertySetter("websites/website/load-html-interval-base", "loadHtmlIntervalBase");
+		digester.addBeanPropertySetter("websites/website/load-html-interval-offset", "loadHtmlIntervalOffset");
+		digester.addBeanPropertySetter("websites/website/load-pic-interval-base", "loadPicIntervalBase");
+		digester.addBeanPropertySetter("websites/website/load-pic-interval-offset", "loadPicIntervalOffset");
+		digester.addBeanPropertySetter("websites/website/main-directory-name", "mainDirectoryName");
 		digester.addObjectCreate("websites/website/domains", GalleryDomains.class);
 		digester.addCallMethod("websites/website/domains/value", "addDomain", 1);
 		digester.addCallParam("websites/website/domains/value", 0);

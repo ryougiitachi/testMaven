@@ -5,12 +5,18 @@
 		<name></name>
 		<charset></charset>
 		<parser-class-name></parser-class-name>
+		<load-html-interval-base></load-html-interval-base>
+		<load-html-interval-offset></load-html-interval-offset>
+		<load-html-pic-base></load-html-pic-base>
+		<load-html-pic-offset></load-html-pic-offset>
+		<main-directory-name></main-directory-name>
 		<domains>
 			<value></value>
 			<value></value>
 			<value></value>
-			<value></value>
-			<value></value>
 		</domains>
+		<properties>
+			<property name=""></property>
+		</properties>
 	</website>
 </websites>

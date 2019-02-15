@@ -9,6 +9,16 @@ public class GalleryWebsite {
 	private String charset;
 	
 	private String parserClassName;
+	
+	private int loadHtmlIntervalBase;
+	
+	private int loadHtmlIntervalOffset;
+	
+	private int loadPicIntervalBase;
+	
+	private int loadPicIntervalOffset;
+	
+	private String mainDirectoryName;
 
 	private GalleryDomains domains;
 	
@@ -45,6 +55,46 @@ public class GalleryWebsite {
 
 	public void setParserClassName(String praserClassName) {
 		this.parserClassName = praserClassName;
+	}
+
+	public int getLoadHtmlIntervalBase() {
+		return loadHtmlIntervalBase;
+	}
+
+	public void setLoadHtmlIntervalBase(int loadHtmlIntervalBase) {
+		this.loadHtmlIntervalBase = loadHtmlIntervalBase;
+	}
+
+	public int getLoadHtmlIntervalOffset() {
+		return loadHtmlIntervalOffset;
+	}
+
+	public void setLoadHtmlIntervalOffset(int loadHtmlIntervalOffset) {
+		this.loadHtmlIntervalOffset = loadHtmlIntervalOffset;
+	}
+
+	public int getLoadPicIntervalBase() {
+		return loadPicIntervalBase;
+	}
+
+	public void setLoadPicIntervalBase(int loadPicIntervalBase) {
+		this.loadPicIntervalBase = loadPicIntervalBase;
+	}
+
+	public int getLoadPicIntervalOffset() {
+		return loadPicIntervalOffset;
+	}
+
+	public void setLoadPicIntervalOffset(int loadPicIntervalOffset) {
+		this.loadPicIntervalOffset = loadPicIntervalOffset;
+	}
+
+	public String getMainDirectoryName() {
+		return mainDirectoryName;
+	}
+
+	public void setMainDirectoryName(String mainDirectoryName) {
+		this.mainDirectoryName = mainDirectoryName;
 	}
 
 	public GalleryDomains getDomains() {

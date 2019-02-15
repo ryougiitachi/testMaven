@@ -20,13 +20,12 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import per.itachi.test.gallery.GalleryConstants;
+import per.itachi.test.gallery.conf.GalleryWebsite;
 import per.itachi.test.gallery.entity.NineSixxxNetPage;
 import per.itachi.test.gallery.util.GalleryUtils;
 import per.itachi.test.gallery.util.WebUtils;
 
 public class NineSixxxNetParser implements Parser {
-	
-	private static final String WEBSITE_CHARSET = "GBK";
 	
 	private static final String SELECTOR_TITLE = 
 			"section.container div.content-wrap div.content header.article-header h1.article-title";
@@ -45,11 +44,17 @@ public class NineSixxxNetParser implements Parser {
 	
 	private String baseUrl;
 	
+	private GalleryWebsite conf;
+	
 	private String title;
 	
 	public NineSixxxNetParser(String urlLink) {
 		this.urlLink = urlLink;
-		this.baseUrl = WebUtils.getBaseUrl(urlLink);
+	}
+	
+	public NineSixxxNetParser(String urlLink, String baseUrl) {
+		this.urlLink = urlLink;
+		this.baseUrl = baseUrl;;
 	}
 
 	@Override
@@ -86,7 +91,7 @@ public class NineSixxxNetParser implements Parser {
 	private String generatePicDirectory(String tmpHtmlPath) throws IOException {
 		StringBuilder builder = new StringBuilder();
 		File fileTmpHtmlPath = new File(tmpHtmlPath);
-		Document document = Jsoup.parse(fileTmpHtmlPath, WEBSITE_CHARSET);
+		Document document = Jsoup.parse(fileTmpHtmlPath, this.conf.getCharset());//GBK
 		Element elementTitle = document.selectFirst(SELECTOR_TITLE);
 		String strTitle = this.title = elementTitle.text();
 		String strPicDirPath = GalleryUtils.joinStrings(builder, 
@@ -94,7 +99,7 @@ public class NineSixxxNetParser implements Parser {
 				strTitle, File.separator);
 		File filePicDirPath = new File(strPicDirPath);
 		if (filePicDirPath.exists()) {
-			logger.info("{} has been downloaded before", this.urlLink);
+			logger.info("{} downloaded before", this.urlLink);
 			return null;
 		}
 		filePicDirPath.mkdir();
@@ -140,9 +145,8 @@ public class NineSixxxNetParser implements Parser {
 		NineSixxxNetPage page = null;
 		
 		Random random = new Random(System.currentTimeMillis());
-		long lInterval = 0;
 		File fileTmpHtmlPath = new File(strTmpFilePath);
-		Document document = Jsoup.parse(fileTmpHtmlPath, WEBSITE_CHARSET);
+		Document document = Jsoup.parse(fileTmpHtmlPath, this.conf.getCharset());//GBK
 		for(elementsNextPage = document.select(SELECTOR_NEXT_PAGE); 
 				elementsNextPage.size() > 0;
 				elementsNextPage = document.select(SELECTOR_NEXT_PAGE)) {
@@ -156,16 +160,24 @@ public class NineSixxxNetParser implements Parser {
 			page.setCurrUrlLink(strCurrUrl);
 			page.setTmpFilePath(strTmpFilePath);
 			tmpFilePaths.add(page);
-			try {
-				lInterval = random.nextInt(500) + 1000;
-				logger.info("The current thread will sleep {} milliseconds.", lInterval);
-				Thread.sleep(lInterval);
-			} 
-			catch (InterruptedException e) {
-				logger.error(e.getMessage(), e);
-			}
+			//anti-prohibit
+			antiProhibitForHtml(random);
 		}
 		logger.info("Finish downloading html files.");
+	}
+	
+	/**
+	 * avoid website forbidding to parsing. 
+	 * */
+	private void antiProhibitForHtml(Random random) {
+		try {
+			long lInterval = random.nextInt(conf.getLoadHtmlIntervalOffset()) + conf.getLoadHtmlIntervalBase();//500 + 1000 
+			logger.debug("The current thread will sleep {} milliseconds.", lInterval);
+			Thread.sleep(lInterval);
+		} 
+		catch (InterruptedException e) {
+			logger.error("Interrupted when anti-killing for downloading html. ", e);
+		}
 	}
 	
 	private void loadImageLinkList(List<NineSixxxNetPage> tmpFilePaths, List<String> imageLinks) throws IOException {
@@ -176,7 +188,7 @@ public class NineSixxxNetParser implements Parser {
 		Elements elementsImg = null;
 		for (NineSixxxNetPage page : tmpFilePaths) {
 			fileTmpHtmlPath = new File(page.getTmpFilePath());
-			document = Jsoup.parse(fileTmpHtmlPath, WEBSITE_CHARSET);
+			document = Jsoup.parse(fileTmpHtmlPath, this.conf.getCharset());
 			elementsImg = document.select(SELECTOR_IMG);
 			for (Element elementImg : elementsImg) {
 				imageLinks.add(WebUtils.getCompleteUrlLink(builder, elementImg.attr("src"), this.baseUrl, page.getCurrUrlLink()));
@@ -194,24 +206,42 @@ public class NineSixxxNetParser implements Parser {
 		String strImgPath = null;
 		String strFixedPath = null;
 		Random random = new Random(System.currentTimeMillis());
-		long lInterval = 0;
 		for (String strImgLink : imageLinks) {
+			// download it and than rename it. 
 			++i;
 			strImgPath = GalleryUtils.loadFileByURL(strImgLink, headers, buffer, picPath, builder);
 			fileImg = new File(strImgPath);
 			strFixedPath = String.format("%s%05d-%s", picPath, i, fileImg.getName());
 			fileImg.renameTo(new File(strFixedPath));
 			logger.info("{}/{} image files have been downloaded.", i, imageLinks.size());
-			try {
-				lInterval = random.nextInt(350) + 300;
-				logger.info("The current thread will sleep {} milliseconds.", lInterval);
-				Thread.sleep(lInterval);
-			} 
-			catch (InterruptedException e) {
-				logger.error(e.getMessage(), e);
-			}
+			//anti-prohibit
+			antiProhibitForPic(random);
 		}
 		logger.info("Finish downloading images.");
+	}
+	
+	/**
+	 * avoid website forbidding to parsing. 
+	 * */
+	private void antiProhibitForPic(Random random) {
+		try {
+			long lInterval = random.nextInt(conf.getLoadPicIntervalOffset()) + conf.getLoadPicIntervalBase();//350 + 300 
+			logger.debug("The current thread will sleep {} milliseconds.", lInterval);
+			Thread.sleep(lInterval);
+		} 
+		catch (InterruptedException e) {
+			logger.error("Interrupted when anti-killing for downloading picutre. ", e);
+		}
+	}
+
+	@Override
+	public void setBaseUrl(String baseUrl) {
+		this.baseUrl = baseUrl;
+	}
+
+	@Override
+	public void setGalleryWebsiteConf(GalleryWebsite conf) {
+		this.conf = conf;
 	}
 
 	@Override
