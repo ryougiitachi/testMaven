@@ -8,7 +8,7 @@ public class WebUtils {
 	
 	public static final String REGEX_WEBSITE_BASE_URL = "(https?://[\\w-]+(\\.[\\w-]+)*(:\\d+)?)/?";
 	
-	public static final String REGEX_WEBSITE_LINK = "(https?://[\\w-]+(\\.[\\w-]+)*(:\\d+)?)(/[\\w-\\.]+)*";
+	public static final String REGEX_WEBSITE_LINK = "(https?://[\\w-]+(\\.[\\w-]+)*(:\\d+)?)(/[\\w-\\.]+)*(\\?([\\w-\\.%=]+(&[\\w-\\.%=]+)*))?";
 	
 	public static final String REGEX_URL_FILENAME = "/?(\\w+\\.\\w+)$";
 	

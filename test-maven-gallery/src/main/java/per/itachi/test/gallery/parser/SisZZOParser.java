@@ -11,7 +11,6 @@ import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
@@ -21,11 +20,11 @@ import java.util.regex.Pattern;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
+import org.jsoup.nodes.Entities;
 import org.jsoup.select.Elements;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import per.itachi.test.gallery.GalleryConstants;
 import per.itachi.test.gallery.conf.GalleryWebsite;
 import per.itachi.test.gallery.entity.SisZZOThreadPage;
 import per.itachi.test.gallery.entity.SisZZOTorrentPage;
@@ -43,39 +42,48 @@ import per.itachi.test.gallery.util.WebUtils;
  * */
 public class SisZZOParser implements Parser {
 	
-	private static final String WEBSITE_DIRECTORY_NAME = "SisZZO";//TODO
+	private static final String DIR_ROOT = "post";//TODO
+	
+	private static final String WEBSITE_DIRECTORY_NAME = "SisZZO";
 	
 	private static final String SELECTOR_TITLE_LIST = //TODO
-			"div#wrapper div div.mainbox.threadlist form table#forum_143 tbody";
+			"div#wrapper > div > div.mainbox.threadlist > form > table > tbody[id]";
 	
-	private static final String SELECTOR_TITLE_LINK = "tr th.new span a";
+	private static final String SELECTOR_TITLE_LINK = 
+			"tr th.new,th.lock span a";
 	
-	private static final String SELECTOR_TITLE_CREATOR = "tr td.author cite a";
+	private static final String SELECTOR_TITLE_CREATOR = 
+			"tr td.author cite a";
 	
 	private static final String SELECTOR_TITLE_LIST_NEXT_PAGE = "div#wrapper div div.pages_btns div.pages a.next";
 	
-	private static final String SELECTOR_THREAD_TITLE = "";//TODO 
+	private static final String SELECTOR_THREAD_TITLE = 
+			"div#wrapper div form div.mainbox.viewthread table tbody tr td.postcontent div.postmessage.defaultpost h2";//TODO 
 	
 	private static final String SELECTOR_THREAD_CDATE = 
-			"div#wrapper div div.mainbox.viewthread table tbody tr td.postcontent div.postinfo";
+			"div#wrapper div form div.mainbox.viewthread table tbody tr td.postcontent div.postinfo";
 	
-	private static final String SELECTOR_THREAD_CONTENT = "";//TODO 
+	private static final String SELECTOR_THREAD_CONTENT = 
+			"div#wrapper div form div.mainbox.viewthread table tbody tr td.postcontent div.postmessage.defaultpost div.t_msgfont";//TODO 
 	
 	private static final String SELECTOR_THREAD_VIDEO_TITLE = "";//TODO 
 	
-	private static final String SELECTOR_THREAD_VIDEO_SNAPSHOT = "";//TODO 
+	private static final String SELECTOR_THREAD_VIDEO_SNAPSHOT = 
+			"div#wrapper div form div.mainbox.viewthread table tbody tr td.postcontent div.postmessage.defaultpost div.t_msgfont img";//TODO 
 	
-	private static final String SELECTOR_THREAD_TORRENT_LINK = "";//TODO
+	private static final String SELECTOR_THREAD_TORRENT_LINK = 
+			"div#wrapper div form div.mainbox.viewthread table tbody tr td.postcontent div.postmessage.defaultpost div.box.postattachlist dl.t_attachlist dt a";//TODO
 	
-	private static final String SELECTOR_TORRENT_LINK = "";//TODO 
+	private static final String SELECTOR_TORRENT_LINK = 
+			"div.card > div.card-body > a.btn.btn-danger";//TODO 
 	
-	private static final String SPECIFIC_CREATOR_UID = "";
+	private static final String SPECIFIC_CREATOR_UID = "13033972";//TODO
 	
-	private static final String PATTERN_TITLE = "";
+	private static final String PATTERN_THREAD_CDATE = "\\d{4}-\\d{1,2}-\\d{1,2} \\d{1,2}:\\d{1,2}";
 	
-	private static final String FORMAT_THREAD_CDATE = "发表于 yyyy-M-d HH:mm:ss";//TODO
+	private static final String FORMAT_THREAD_CDATE = "yyyy-M-d HH:mm";
 	
-	private static final String FORMAT_DATE_DISPLAY = "yyyyMMdd";//TODO
+	private static final String FORMAT_DATE_DISPLAY = "yyyyMMdd";
 	
 	private final Logger logger = LoggerFactory.getLogger(SisZZOParser.class);
 	
@@ -110,7 +118,7 @@ public class SisZZOParser implements Parser {
 
 	@Override
 	public void execute() {
-		logger.info("Start parsing SisZZO URL {}", this.urlLink);
+		logger.info("Start parsing {} URL {}", this.conf.getName(), this.urlLink);
 		List<SisZZOThreadPage> listThreadHtml = new ArrayList<>(1000);
 		List<SisZZOTorrentPage> listThreadTorrent = new ArrayList<>(1000);
 		loadTitleListHtml(listThreadHtml);//load title pages and thread url
@@ -122,39 +130,59 @@ public class SisZZOParser implements Parser {
 	 * download title pages and load thread links. 
 	 * */
 	private void loadTitleListHtml(List<SisZZOThreadPage> threadHtmls) {
-		logger.info("Start downloading title pages and loading thread links");
+		logger.info("loadTitleListHtml: Start downloading title pages and loading thread links");
 		String strNextPageUrlLink = this.urlLink;
 		Elements elementsNextPage = null;
-		String strUID = SPECIFIC_CREATOR_UID;//TODO: it is better to modify configurable value. 
+		String strUID = SPECIFIC_CREATOR_UID;//TODO: it is better to modify configurable value.
+		int countPage = 0;
+		int retryTime = 0;
 		Map<String, String> mapHeaders = GalleryUtils.getDefaultRequestHeaders();
 		try {
 			do {
 				//load relevant thread title into list. 
-				String strTitleListHtmlPath = GalleryUtils.loadHtmlByURL(strNextPageUrlLink, mapHeaders);
+				logger.info("loadTitleListHtml: downloading and parsing the {}th list page. ", countPage + 1);
+				String strHtmlFileName = joinFileNameForTitleList(strNextPageUrlLink, countPage + 1 , retryTime);
+				String strTitleListHtmlPath = GalleryUtils.loadHtmlByURL(strNextPageUrlLink, mapHeaders, strHtmlFileName);
 				Document document = Jsoup.parse(new File(strTitleListHtmlPath), this.conf.getCharset());
+				//check whether or not page is valid. 
+				if (isValidHtmlPage(document) && isValidTitleListPage(document)) {
+					retryTime = 0;
+					++countPage;
+				} 
+				else {
+					//retry
+					logger.info("loadTitleListHtml: {} is invalid, and trying. ", strHtmlFileName);
+					++retryTime;
+					antiProhibitForHtml();
+					continue;
+				}
+				//parsing
 				Elements elementsTitleList = document.select(SELECTOR_TITLE_LIST);
+				int countTitle = 0;
 				for (Element elementTitleItem : elementsTitleList) {
 					Element elementLink = elementTitleItem.selectFirst(SELECTOR_TITLE_LINK);
 					Element elementCreator = elementTitleItem.selectFirst(SELECTOR_TITLE_CREATOR);
 					if (elementLink != null && elementCreator != null) { 
 						//TODO: more readable? 
-						String strCreatorHref = elementCreator.attr("href");
-						Map<String, String> mapCreatorParams = getUrlQueryParam(strCreatorHref);
+						String strCreatorHref = Entities.unescape(elementCreator.attr("href"));
+						Map<String, String> mapCreatorParams = GalleryUtils.getUrlQueryParam(strCreatorHref);
 						if (isSpecificUser(mapCreatorParams, strUID)) {
 							SisZZOThreadPage page = new SisZZOThreadPage();
 							page.setTitle(elementLink.text());
 							page.setCreatorName(elementCreator.text());
 							page.setCreatorUID(mapCreatorParams.get("uid"));
-							page.setUrlLink(WebUtils.getCompleteUrlLink(elementLink.attr("href"), this.baseUrl, strNextPageUrlLink));
+							page.setUrlLink(WebUtils.getCompleteUrlLink(Entities.unescape(elementLink.attr("href")), this.baseUrl, strNextPageUrlLink));
 							threadHtmls.add(page);
+							++countTitle;
 						}
 					}
 				}
+				logger.info("loadTitleListHtml: there are {}/{} posts in the {}th page created by UID {}. ", countTitle, elementsTitleList.size(), countPage, strUID);
 				//check whether or not there is next page. 
 				elementsNextPage = document.select(SELECTOR_TITLE_LIST_NEXT_PAGE);
 				if (elementsNextPage != null && elementsNextPage.size() > 0) {
 					Element elementNextPage = elementsNextPage.first();
-					strNextPageUrlLink = WebUtils.getCompleteUrlLink(elementNextPage.attr("href"), this.baseUrl, strNextPageUrlLink);
+					strNextPageUrlLink = WebUtils.getCompleteUrlLink(Entities.unescape(elementNextPage.attr("href")), this.baseUrl, strNextPageUrlLink);
 					//anti-prohibit
 					antiProhibitForHtml();
 				} 
@@ -167,6 +195,14 @@ public class SisZZOParser implements Parser {
 		catch (IOException e) {
 			logger.error("Error occured when parsing title list. ", e);
 		}
+	}
+	
+	private String joinFileNameForTitleList(String url, int pageNbr, int retryTime) {
+		Map<String, String> mapParams = GalleryUtils.getUrlQueryParam(url);
+		String strUrlPathName = GalleryUtils.getUrlLastPathWithoutSuffix(url);
+		String strFid = mapParams.get("fid");
+		String strTypeId = mapParams.get("typeid");
+		return String.format("%s-%s-fid%s-type%s-%05d-r%03d.html", this.conf.getName(), strUrlPathName, strFid, strTypeId, pageNbr, retryTime);
 	}
 	
 	/**
@@ -186,48 +222,76 @@ public class SisZZOParser implements Parser {
 	 * download post pages. 
 	 * */
 	private void loadThreadHtml(List<SisZZOThreadPage> threadHtmls, List<SisZZOTorrentPage> threadTorrents) {
-		logger.info("Start downloading post pages and pictures. ");
+		logger.info("loadThreadHtml: Start downloading {} post pages and pictures. ", threadHtmls.size());
 		Map<String, String> mapHeaders = GalleryUtils.getDefaultRequestHeaders();
-		byte[] buffer = new byte[8196];
-		StringBuilder builder = new StringBuilder(512);
+		int retryTime = 0;
 		try {
 			Path dirWebsite = createMainDirectory();
 			for (SisZZOThreadPage page : threadHtmls) {
-				String strThreadHtmlPath = GalleryUtils.loadHtmlByURL(page.getUrlLink(), mapHeaders);
+				logger.info("loadThreadHtml: parsing the page with title {} and url {}. ", page.getTitle(), page.getCreatorName());
+				String strHtmlFileName =  joinFileNameForThread(page, retryTime);
+				String strThreadHtmlPath = GalleryUtils.loadHtmlByURL(page.getUrlLink(), mapHeaders, strHtmlFileName);
 				page.setHtmlFilePath(strThreadHtmlPath);
 				Document document = Jsoup.parse(new File(strThreadHtmlPath), this.conf.getCharset());
-				Path dirThreadTitle = createThreadDirectory(page, dirWebsite);
-				loadIntroToReadme(document, dirThreadTitle);//readme
-				loadSnapshotPic(document, dirThreadTitle, page, mapHeaders, buffer, builder);//preview image 
-				//torrent 
-				Element elementCdate = document.selectFirst(SELECTOR_THREAD_CDATE);
-				Element elementTorrent = document.selectFirst(SELECTOR_THREAD_TORRENT_LINK);
-				if (elementCdate != null && elementTorrent != null) {
-					String strTorrentPageHref = elementTorrent.attr("href");
-					String strCompleteTorrentPageLink = WebUtils.getCompleteUrlLink(strTorrentPageHref, this.baseUrl, page.getUrlLink());
-					SisZZOTorrentPage torrentPage = new SisZZOTorrentPage();
-					torrentPage.setTorrentFileName(GalleryUtils.joinStrings(builder, page.getCreatorName(), "-", 
-							formatDisplay.format(formatCdate.parse(elementCdate.text())), "-", page.getTitle()));
-					torrentPage.setReferPageLink(strCompleteTorrentPageLink);
-					torrentPage.setThreadDirPath(dirThreadTitle.toString());
+				//check whether or not page is valid. 
+				if (isValidHtmlPage(document) && isValidThreadPage(document)) {
+					retryTime = 0;
+				} 
+				else {
+					//retry
+					logger.info("loadThreadHtml: {} is invalid, and trying. ", strHtmlFileName);
+					++retryTime;
+					antiProhibitForHtml();
+					continue;
 				}
+				try {
+					Path dirThreadTitle = createThreadDirectory(page, dirWebsite);
+					loadIntroToReadme(document, dirThreadTitle);//readme
+					loadSnapshotPic(document, dirThreadTitle, page, mapHeaders);//preview image 
+					//attachment page link. 
+					logger.info("loadThreadHtml: for the page {}, parsing attachment page link. ", page.getTitle());
+					Element elementCdate = document.selectFirst(SELECTOR_THREAD_CDATE);
+					Elements elementsTorrent = document.select(SELECTOR_THREAD_TORRENT_LINK);
+					if (elementCdate != null && elementsTorrent.size() >= 3) {
+						String strTorrentPageHref = Entities.unescape(elementsTorrent.get(1).attr("href"));
+						String strCompleteTorrentPageLink = WebUtils.getCompleteUrlLink(strTorrentPageHref, this.baseUrl, page.getUrlLink());
+						SisZZOTorrentPage torrentPage = new SisZZOTorrentPage();
+						torrentPage.setTorrentFileName(GalleryUtils.joinStrings(page.getCreatorName(), "-", 
+								parseThreadCdateString(elementCdate), "-", page.getTitle()));
+						torrentPage.setReferPageLink(strCompleteTorrentPageLink);
+						torrentPage.setThreadDirPath(dirThreadTitle.toString());
+					}
+				} 
+				catch (IOException e) {
+					logger.error("Error occured when creating thread directory {}. ", page.getTitle(), e);
+				}
+				antiProhibitForHtml();
 			}
 		} 
 		catch (IOException e) {
 			logger.error("Error occured when parsing list of threads. ", e);
-		} 
-		catch (ParseException e) {
-			logger.error("Error occured when joining file name {}. ", e.getErrorOffset(), e);
 		}
 	}
 	
+	private String joinFileNameForThread(SisZZOThreadPage page, int retryTime) {
+		String strBasePath = GalleryUtils.getUrlLastPathWithoutSuffix(page.getUrlLink());
+		Map<String, String> mapParams = GalleryUtils.getUrlQueryParam(page.getUrlLink());
+		return String.format("%s-%s-tid%s-%03d.html", this.conf.getName(), strBasePath, mapParams.get("tid"), retryTime);
+	}
+	
 	private Path createMainDirectory() throws IOException {
-		Path dirWebsite = Paths.get(GalleryConstants.DEFAULT_PICTURE_PATH, this.conf.getMainDirectoryName());
+		Path dirWebsite = Paths.get(DIR_ROOT, this.conf.getMainDirectoryName());
+		if (Files.exists(dirWebsite)) {
+			return dirWebsite;
+		}
 		return Files.createDirectory(dirWebsite);
 	}
 	
 	private Path createThreadDirectory(SisZZOThreadPage page, Path mainDir) throws IOException {
-		Path dirThreadTitle = Paths.get(mainDir.toString(), page.getCreatorName() + "-" + page.getCreatorUID());
+		Path dirThreadTitle = Paths.get(mainDir.toString(), page.getCreatorName() + "-" + page.getTitle());
+		if (Files.exists(dirThreadTitle)) {
+			return dirThreadTitle;
+		}
 		return Files.createDirectory(dirThreadTitle);
 	}
 	
@@ -235,114 +299,169 @@ public class SisZZOParser implements Parser {
 	 * create readme.txt
 	 * */
 	private void loadIntroToReadme(Document document, Path threadDir) {
-		try {
-			Path fileReadme = Files.createFile(Paths.get(threadDir.toString(), "reademe.txt"));
-			Element elementTitle = document.selectFirst(SELECTOR_THREAD_TITLE);
-			Element elementCdate = document.selectFirst(SELECTOR_THREAD_CDATE);
-			Element elementContent = document.selectFirst(SELECTOR_THREAD_CONTENT);
-			try(BufferedWriter bw = Files.newBufferedWriter(fileReadme, Charset.defaultCharset())) {
-				if (elementTitle != null) {
-					bw.write(elementTitle.text());
-					bw.newLine();
-					bw.flush();
-				}
-				if (elementCdate != null) {
-					bw.write(elementCdate.text());
-					bw.newLine();
-					bw.flush();
-				}
-				if (elementContent != null) {
-					bw.write(elementContent.html());//using html() because of lots of links.
-					bw.newLine();
-					bw.flush();
-				}
-			} 
-			catch (IOException e) {
-				logger.error("Failed to write readme.txt for {}", threadDir, e);
+		Path fileReadme = Paths.get(threadDir.toString(), "readme.txt");
+		Element elementTitle = document.selectFirst(SELECTOR_THREAD_TITLE);
+		Element elementCdate = document.selectFirst(SELECTOR_THREAD_CDATE);
+		Element elementContent = document.selectFirst(SELECTOR_THREAD_CONTENT);
+		try(BufferedWriter bw = Files.newBufferedWriter(fileReadme, Charset.defaultCharset())) {
+			if (elementTitle != null) {
+				bw.write(elementTitle.text());
+				bw.newLine();
+				bw.newLine();
+				bw.flush();
+			}
+			if (elementCdate != null) {
+				bw.write(elementCdate.text());
+				bw.newLine();
+				bw.newLine();
+				bw.flush();
+			}
+			if (elementContent != null) {
+				bw.write(elementContent.html());//using html() because of lots of links.
+				bw.newLine();
+				bw.newLine();
+				bw.flush();
 			}
 		} 
 		catch (IOException e) {
-			logger.error("Failed to create readme.txt for {}", threadDir, e);
+			logger.error("Failed to write readme.txt for {}", threadDir, e);
 		}
 	}
 	
 	/**
 	 * download preview image. 
 	 * */
-	private void loadSnapshotPic(Document document, Path threadDir, SisZZOThreadPage page, 
-			Map<String, String> headers, byte[] buffer, StringBuilder builder) {
-		Elements elementsTitle = document.select(SELECTOR_THREAD_VIDEO_TITLE);//TODO 
+	private void loadSnapshotPic(Document document, Path threadDir, SisZZOThreadPage page, Map<String, String> headers) {
 		Elements elementsPic = document.select(SELECTOR_THREAD_VIDEO_SNAPSHOT);//TODO 
-		if (elementsTitle.size() > 0 && elementsPic.size() > 0) {//TODO 
-			for (int i = 0; i < elementsTitle.size(); i++) {
+		if (elementsPic.size() > 0) {//TODO 
+			logger.info("loadSnapshotPic: In the page {}, downloading {} pictures. ", page.getTitle(), elementsPic.size());
+			for (int i = 0; i < elementsPic.size(); i++) {
 				Element elementPic = elementsPic.get(i);
-				String strPicUrl = WebUtils.getCompleteUrlLink(builder, elementPic.text(), baseUrl, page.getUrlLink());
-				String strImgPath = GalleryUtils.loadFileByURL(strPicUrl, headers, String.format("%05d-%s", i + 1, getPicFileNameByURL(strPicUrl)), buffer, threadDir.toString(), builder);
+				String strPicUrl = WebUtils.getCompleteUrlLink(Entities.unescape(elementPic.attr("src")), baseUrl, page.getUrlLink());
+				String strImgPath = GalleryUtils.loadFileByURL(strPicUrl, headers, String.format("%05d-%s", i + 1, joinPicFileNameByURL(page, strPicUrl)), threadDir.toString());
+				logger.debug("loadSnapshotPic: downloaded {}. ", strImgPath);
 				//anti-prohibit
 				antiProhibitForPic();
 			}
 		}
 	}
 	
-	private String getPicFileNameByURL(String urlPicture) {
+	private String joinPicFileNameByURL(SisZZOThreadPage page, String urlPicture) {
 		if (urlPicture == null) {
 			return GalleryUtils.EMPTY_STRING;
 		}
 		//with query parameters
-		Pattern patternUrlFileName = Pattern.compile(WebUtils.REGEX_URL_FILENAME);
-		Matcher matcherUrlFileName = patternUrlFileName.matcher(urlPicture);
-		if (matcherUrlFileName.find()) {
-			return matcherUrlFileName.group(1);
+		String strFileName = GalleryUtils.getUrlLastPathWithoutSuffix(urlPicture);
+		String strSuffix = GalleryUtils.getUrlLastPathSuffix(urlPicture);
+		if (strSuffix == null || strSuffix.length() == 0) {
+			return GalleryUtils.joinStrings(strFileName, strSuffix);
+		} 
+		else {
+			return GalleryUtils.joinStrings(strFileName);
 		}
 		//without query parameters
-		Map<String, String> mapParams = getUrlQueryParam(urlPicture);
-		return GalleryUtils.EMPTY_STRING;
+//		Map<String, String> mapParams = GalleryUtils.getUrlQueryParam(urlPicture);
+//		return GalleryUtils.EMPTY_STRING;
 	}
 	
-	private Map<String, String> getUrlQueryParam(String url) {
-		Map<String, String> mapParams = new HashMap<>();
-		Pattern patternUrlParams = Pattern.compile(GalleryUtils.REGEX_URL_PARAMS);
-		Matcher matcherUrlParams = patternUrlParams.matcher(url);
-		if (matcherUrlParams.find()) {
-			String strParams = matcherUrlParams.group(1);
-			String[] arrayParams = strParams.split("&");
-			for (String strParam : arrayParams) {
-				String[] arrayKeyValue = strParam.split("=");
-				if (arrayKeyValue.length >= 2) {
-					mapParams.put(arrayKeyValue[0], arrayKeyValue[1]);
-				}
-				else {
-					mapParams.put(strParam, GalleryUtils.EMPTY_STRING);
-				}
+	private String parseThreadCdateString(Element cdate) {
+		String strCdate = cdate.text();
+		Pattern pattern = Pattern.compile(PATTERN_THREAD_CDATE);
+		Matcher matcher = pattern.matcher(strCdate);
+		if (matcher.find()) {
+			try {
+				return formatDisplay.format(formatCdate.parse(matcher.group()));
+			} 
+			catch (ParseException e) {
+				logger.error("Failed to parse {}. ", strCdate, e);
 			}
 		}
-		return mapParams;
+		return "19700101";
 	}
 	
 	/**
 	 * download torrent 
 	 * */
 	private void loadThreadTorrent(List<SisZZOTorrentPage> threadTorrents) {
-		logger.info("Start downloading torrents. ");
+		logger.info("loadThreadTorrent: Start downloading {} torrents. ", threadTorrents.size());
 		Map<String, String> mapHeaders = GalleryUtils.getDefaultRequestHeaders();
-		byte[] buffer = new byte[8192];
-		StringBuilder builder = new StringBuilder(512);
+		int retryTime = 0;
 		for (SisZZOTorrentPage page : threadTorrents) {
-			String strHtmlFilePath = GalleryUtils.loadHtmlByURL(page.getReferPageLink(), mapHeaders);
+			String strHtmlFileName = joinFileNameForThreadTorrent(page, retryTime);
+			String strHtmlFilePath = GalleryUtils.loadHtmlByURL(page.getReferPageLink(), mapHeaders, strHtmlFileName);
 			File fileHtml = new File(strHtmlFilePath);
 			try {
 				Document document = Jsoup.parse(fileHtml, this.conf.getCharset());
+				//check whether or not page is valid. 
+				if (isValidHtmlPage(document) && isValidAttachmentPage(document)) {
+					retryTime = 0;
+				} 
+				else {
+					//retry
+					logger.info("loadThreadTorrent: {} is invalid, and trying. ", strHtmlFileName);
+					++retryTime;
+					antiProhibitForHtml();
+					continue;
+				}
 				Element elementTorrent = document.selectFirst(SELECTOR_TORRENT_LINK);
 				if (elementTorrent != null) {
-					String strCompleteTorrentLink = WebUtils.getCompleteUrlLink(elementTorrent.attr("href"), this.baseUrl, page.getReferPageLink());
-					String strTorrentFilePath = GalleryUtils.loadFileByURL(strCompleteTorrentLink, mapHeaders, page.getTorrentFileName(), buffer, page.getThreadDirPath(), builder);
+					logger.info("loadThreadTorrent: downloading torrent named as {}. ", page.getTorrentFileName());
+					String strCompleteTorrentLink = WebUtils.getCompleteUrlLink(Entities.unescape(elementTorrent.attr("href")), this.baseUrl, page.getReferPageLink());
+					String strTorrentFilePath = GalleryUtils.loadFileByURL(strCompleteTorrentLink, mapHeaders, page.getTorrentFileName(), page.getThreadDirPath());
 					Files.copy(Paths.get(strTorrentFilePath), Paths.get(".", WEBSITE_DIRECTORY_NAME, page.getTorrentFileName()));//TODO: path is unsafe. 
 				}
+				antiProhibitForHtml();
 			} 
 			catch (IOException e) {
 				logger.error("Error occured when parsing torrent refer page {}. ", strHtmlFilePath, e);
 			}
 		}
+	}
+	
+	private String joinFileNameForThreadTorrent(SisZZOTorrentPage page, int retryTime) {
+		String strBasePath = GalleryUtils.getUrlLastPathWithoutSuffix(page.getReferPageLink());
+		Map<String, String> mapParams = GalleryUtils.getUrlQueryParam(page.getReferPageLink());
+		return String.format("%s-%s-aid%s-%03d.html", this.conf.getName(), strBasePath, mapParams.get("aid"), retryTime);
+	}
+	
+	/**
+	 * Check whether or not the current page is valid. 
+	 * Avoid anti-parsing. 
+	 *  
+	 * */
+	private boolean isValidHtmlPage(Document document) {
+		Element head = document.head();
+		if (head != null) {
+			Elements meta = head.select("meta");
+			if (meta.size() > 0) {
+				return true;
+			}
+		}
+		return false;
+	}
+	
+	private boolean isValidTitleListPage(Document document) {
+		Elements elements = document.select(SELECTOR_TITLE_LIST);
+		if (elements.size() > 0) {
+			return true;
+		}
+		return false;
+	}
+	
+	private boolean isValidThreadPage(Document document) {
+		Elements elements = document.select(SELECTOR_THREAD_TITLE);
+		if (elements.size() > 0) {
+			return true;
+		}
+		return false;
+	}
+	
+	private boolean isValidAttachmentPage(Document document) {
+		Elements elements = document.select(SELECTOR_TORRENT_LINK);
+		if (elements.size() > 0) {
+			return true;
+		}
+		return false;
 	}
 	
 	/**
@@ -401,30 +520,6 @@ public class SisZZOParser implements Parser {
 		} 
 		catch (ParseException e) {
 			e.printStackTrace();
-		}
-		if (args.length <= 0) {
-			return;
-		}
-		String strUrl = args[0];
-		Map<String, String> mapParams = new HashMap<>();
-		Pattern patternUrlParams = Pattern.compile(GalleryUtils.REGEX_URL_PARAMS);
-		Matcher matcherUrlParams = patternUrlParams.matcher(strUrl);
-		if (matcherUrlParams.find()) {
-			String strParams = matcherUrlParams.group(1);
-			System.out.println(strParams);
-			String strParamsTest = matcherUrlParams.group(2);
-			System.out.println(strParamsTest);
-			String[] arrayParams = strParams.split("&");
-			for (String strParam : arrayParams) {
-				String[] arrayKeyValue = strParam.split("=");
-				if (arrayKeyValue.length >= 2) {
-					mapParams.put(arrayKeyValue[0], arrayKeyValue[1]);
-					System.out.println(arrayKeyValue[0] + " " + arrayKeyValue[1]);
-				}
-				else {
-					mapParams.put(strParam, GalleryUtils.EMPTY_STRING);
-				}
-			}
 		}
 	}
 }

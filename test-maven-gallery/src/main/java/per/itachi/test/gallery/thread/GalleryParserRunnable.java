@@ -101,6 +101,7 @@ public class GalleryParserRunnable implements ControllableRunnable {
 				try {
 					parser = instantiateNewParser(clazzParser, strUrlLink);
 					parser.setBaseUrl(strBaseUrl);
+					parser.setGalleryWebsiteConf(website);
 					lStartPoint = System.currentTimeMillis();
 					parser.execute();
 					lEndPoint = System.currentTimeMillis();
@@ -139,7 +140,7 @@ public class GalleryParserRunnable implements ControllableRunnable {
 			logger.error("The Gallery Parser thread has been interruputed. ", e);
 		}
 		finally {
-			// test whether or not theard in pool will interrupt. 
+//			 test whether or not theard in pool will interrupt. 
 //			if (Thread.interrupted()) {
 //				isRunning = false;
 //			}

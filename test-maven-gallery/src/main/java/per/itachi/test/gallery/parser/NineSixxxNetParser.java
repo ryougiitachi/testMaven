@@ -1,9 +1,11 @@
 package per.itachi.test.gallery.parser;
 
+import java.io.BufferedWriter;
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.io.PrintWriter;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -103,26 +105,7 @@ public class NineSixxxNetParser implements Parser {
 			return null;
 		}
 		filePicDirPath.mkdir();
-		Elements elementsPublishDate = document.select(SELECTOR_PUBLISH_DATE);
-		Elements elementsArticle = document.select(SELECTOR_INTRODUCTION);
-		String strIntroFilePath = GalleryUtils.joinStrings(builder, strPicDirPath, "readme.txt");
-		File fileIntro = new File(strIntroFilePath);
-		try(PrintWriter pw = new PrintWriter(fileIntro)) {
-			pw.println(this.urlLink);
-			pw.println();
-			if (elementsPublishDate.size() > 0) {
-				pw.println(elementsPublishDate.get(0).text());
-				pw.println();
-			}
-			for (Element elementArticle : elementsArticle) {
-				if (elementArticle.hasText()) {
-					pw.println(elementArticle.text());
-				}
-			}
-		} 
-		catch (FileNotFoundException e) {
-			logger.error(e.getMessage(), e);
-		}
+		generateReadme(document, strPicDirPath);
 		return strPicDirPath;
 	}
 	
@@ -132,6 +115,31 @@ public class NineSixxxNetParser implements Parser {
 		DateFormat sdf = new SimpleDateFormat("yyyyMMdd");
 		strDate = sdf.format(calendar.getTime());
 		return strDate;
+	}
+	
+	private void generateReadme(Document document, String picDirPath) {
+		Element elementPublishDate = document.selectFirst(SELECTOR_PUBLISH_DATE);
+		Elements elementsArticle = document.select(SELECTOR_INTRODUCTION);
+		Path fileReadme = Paths.get(picDirPath, "readme.txt");
+		try(BufferedWriter bw = Files.newBufferedWriter(fileReadme);) {
+			bw.write(this.urlLink);
+			bw.newLine();
+			bw.newLine();
+			if (elementPublishDate != null) {
+				bw.write(elementPublishDate.text());
+				bw.newLine();
+				bw.newLine();
+			}
+			for (Element elementArticle : elementsArticle) {
+				if (elementArticle.hasText()) {
+					bw.write(elementArticle.text());
+					bw.newLine();
+				}
+			}
+		} 
+		catch (IOException e) {
+			logger.error("Error occured when creating readme.txt in {}. ", picDirPath, e);
+		}
 	}
 	
 	private void loadTmpHtmlList(String initTmpHtmlPath, List<NineSixxxNetPage> tmpFilePaths, Map<String, String> headers) throws IOException {
@@ -154,7 +162,7 @@ public class NineSixxxNetParser implements Parser {
 			strNextLink = WebUtils.getCompleteUrlLink(builder, elementNextPage.attr("href"), this.baseUrl, strCurrUrl);
 			strTmpFilePath = GalleryUtils.loadHtmlByURL(strNextLink, headers);
 			fileTmpHtmlPath = new File(strTmpFilePath);
-			document = Jsoup.parse(fileTmpHtmlPath, "UTF-8");
+			document = Jsoup.parse(fileTmpHtmlPath, this.conf.getCharset());
 			strCurrUrl = strNextLink;
 			page = new NineSixxxNetPage();
 			page.setCurrUrlLink(strCurrUrl);
@@ -171,7 +179,7 @@ public class NineSixxxNetParser implements Parser {
 	 * */
 	private void antiProhibitForHtml(Random random) {
 		try {
-			long lInterval = random.nextInt(conf.getLoadHtmlIntervalOffset()) + conf.getLoadHtmlIntervalBase();//500 + 1000 
+			long lInterval = random.nextInt(conf.getLoadHtmlIntervalOffset()) + conf.getLoadHtmlIntervalBase();
 			logger.debug("The current thread will sleep {} milliseconds.", lInterval);
 			Thread.sleep(lInterval);
 		} 
@@ -225,7 +233,7 @@ public class NineSixxxNetParser implements Parser {
 	 * */
 	private void antiProhibitForPic(Random random) {
 		try {
-			long lInterval = random.nextInt(conf.getLoadPicIntervalOffset()) + conf.getLoadPicIntervalBase();//350 + 300 
+			long lInterval = random.nextInt(conf.getLoadPicIntervalOffset()) + conf.getLoadPicIntervalBase();
 			logger.debug("The current thread will sleep {} milliseconds.", lInterval);
 			Thread.sleep(lInterval);
 		} 

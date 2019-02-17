@@ -22,6 +22,8 @@ public class GalleryConstants {
 	
 	public static final String DEFAULT_WEBSITE_CONF_PATH = "conf/websites.xml";
 	
+	public static final int DEFAULT_BUFFER_BYTE_SIZE = 8192;
+	
 	public static final int PASER_STATUS_INITIAL = 0;
 	public static final int PASER_STATUS_PROCESSING = 1;
 	public static final int PASER_STATUS_COMPLETED = 2;

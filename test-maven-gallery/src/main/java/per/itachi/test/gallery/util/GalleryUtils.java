@@ -12,10 +12,13 @@ import java.net.MalformedURLException;
 import java.net.Proxy;
 import java.net.URL;
 import java.net.URLConnection;
+import java.nio.file.Paths;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.zip.GZIPInputStream;
 
 import org.slf4j.Logger;
@@ -31,7 +34,21 @@ public class GalleryUtils {
 	
 	public static final String EMPTY_STRING = "";
 	
-	public static final String REGEX_URL_PARAMS = "/?[\\w-\\.]+\\?([\\w-\\.%=]+(&[\\w-\\.%=]+)*)$";
+	public static final String REGEX_URL_PATH_AND_PARAMS = "/?(([\\w-_]+)(\\.[\\w-_\\.]+))(\\?([\\w-\\.%=]+(&[\\w-\\.%=]+)*))?$";
+	
+	public static String joinStrings(Object... args) {
+		StringBuilder builder = BufferUtils.getLocalStringBuilder();
+		if (builder == null || args == null) {
+			return EMPTY_STRING;
+		}
+		String strResult;
+		for (Object item : args) {
+			builder.append(item);
+		}
+		strResult = builder.toString();
+		builder.setLength(0);
+		return strResult;
+	}
 	
 	public static String joinStrings(StringBuilder builder, Object... args) {
 		if (builder == null || args == null) {
@@ -68,12 +85,17 @@ public class GalleryUtils {
 	}
 	
 	public static final String loadHtmlByURL(String weblink, Map<String, String> headers) {
-		StringBuilder builder = new StringBuilder();
+		String strOutputFileName = getUrlLastPathWithSuffix(weblink);
+		return loadHtmlByURL(weblink, headers, strOutputFileName);
+	}
+	
+	public static final String loadHtmlByURL(String weblink, Map<String, String> headers, String outputFileName) {
 		String strURL = weblink;
 		String strInitialTmpFilePath = null;
 		URL url = null;
 		HttpURLConnection connection = null;
-		byte[] buffer = new byte[8192];
+		Map<String, List<String>> mapHeaders = null;
+		byte[] buffer = BufferUtils.getLocalBufferBytes();
 		int count = 0;
 		boolean isSuccessful = false;
 		String strCompressSuffix = null;
@@ -84,8 +106,9 @@ public class GalleryUtils {
 			setHttpRequestHeaders(connection, headers);
 			connection.connect();
 			logResponseHeaders(connection);
+			mapHeaders = connection.getHeaderFields();
 			strCompressSuffix = getContentEncoding(connection);
-			strInitialTmpFilePath = getInitialTmpFilePath(builder, weblink, strCompressSuffix);
+			strInitialTmpFilePath = getInitialTmpFilePath(outputFileName, strCompressSuffix);
 			try(InputStream is = connection.getInputStream();
 					OutputStream os = new BufferedOutputStream(new FileOutputStream(strInitialTmpFilePath));) {
 				while ((count = is.read(buffer)) > 0) {
@@ -120,7 +143,7 @@ public class GalleryUtils {
 		}
 		
 		isSuccessful = false;
-		String strUncompressFilePath = getUncompressTmpFilePath(builder, weblink);
+		String strUncompressFilePath = getUncompressTmpFilePath(outputFileName);
 		try(InputStream gis = new GZIPInputStream(new FileInputStream(strInitialTmpFilePath)); 
 				OutputStream bos = new BufferedOutputStream(new FileOutputStream(strUncompressFilePath))) {
 			while ((count = gis.read(buffer)) > 0) {
@@ -129,10 +152,10 @@ public class GalleryUtils {
 			isSuccessful = true;
 		} 
 		catch (FileNotFoundException e) {
-			logger.error(e.getMessage(), e);
+			logger.error("Failed to uncompress {} because file doesn't exist. ", strInitialTmpFilePath, e);
 		} 
 		catch (IOException e) {
-			logger.error(e.getMessage(), e);
+			logger.error("Failed to uncompress {}. ", e);
 		} 
 		if (isSuccessful) {
 			return strUncompressFilePath;
@@ -142,12 +165,16 @@ public class GalleryUtils {
 		}
 	}
 	
+	public static String loadFileByURL(String urlLink, Map<String, String> headers, String outputFileName, String dir) {
+		return loadFileByURL(urlLink, headers, outputFileName, BufferUtils.getLocalBufferBytes(), dir, BufferUtils.getLocalStringBuilder());
+	}
+	
 	public static String loadFileByURL(String urlLink, Map<String, String> headers, byte[] buffer, String dir, StringBuilder builder) {
 		return loadFileByURL(urlLink, headers, getFileNameViaUrl(urlLink), buffer, dir, builder);
 	}
 	
 	public static String loadFileByURL(String urlLink, Map<String, String> headers, String outputFileName, byte[] buffer, String dir, StringBuilder builder) {
-		String strFilePath = GalleryUtils.joinStrings(builder, dir, outputFileName);
+		String strFilePath = Paths.get(dir, outputFileName).toString();//TODO: path to string ? 
 		URL url = null;
 		HttpURLConnection connection = null;
 		int count = 0;
@@ -172,11 +199,11 @@ public class GalleryUtils {
 			}
 		} 
 		catch (MalformedURLException e) {
-			logger.error(e.getMessage(), e);
+			logger.error("There is something with URL {}. ", e);
 			isSuccessful = false;
 		}
 		catch (IOException e) {
-			logger.error(e.getMessage(), e);
+			logger.error("Error occured when initialising connection {}. ", e);
 			isSuccessful = false;
 		}
 		finally {
@@ -203,13 +230,16 @@ public class GalleryUtils {
 	}
 	
 	private static void logResponseHeaders(URLConnection connection) {
-		Map<String, List<String>> mapHeader = connection.getHeaderFields();
-		for (String key : mapHeader.keySet()) {
-			for (String value : mapHeader.get(key)) {
+		logResponseHeaders(connection.getHeaderFields());
+		logger.debug("The content length of response is {}", connection.getContentLength());
+	}
+	
+	private static void logResponseHeaders(Map<String, List<String>> headers) {
+		for (String key : headers.keySet()) {
+			for (String value : headers.get(key)) {
 				logger.debug("{}: {}", key, value);
 			}
 		}
-		logger.debug("The content length of response is {}", connection.getContentLength());
 	}
 	
 	private static String getContentEncoding(URLConnection connection) {
@@ -226,36 +256,30 @@ public class GalleryUtils {
 		}
 	}
 	
-	private static String getInitialTmpFilePath(StringBuilder builder, String weblink, String compressedSuffix) {
+	/**
+	 * @param fileName	
+	 * */
+	private static String getInitialTmpFilePath(String fileName, String compressedSuffix) {
 		String strInitialTmpFilePath = null;
-		int iSlash = weblink.lastIndexOf("/");
-		String strTmpFileName = weblink.substring(iSlash + 1);
-		if (strTmpFileName.length() == 0) {
-			int iSlashTmp = weblink.lastIndexOf("/", iSlash - 1);
-			strTmpFileName = weblink.substring(iSlashTmp + 1, iSlash);
-		}
 		if (compressedSuffix == null) {
-			strInitialTmpFilePath = GalleryUtils.joinStrings(builder, GalleryUtils.slashDirectoryPath("html"), strTmpFileName, ".html");
+			strInitialTmpFilePath = GalleryUtils.joinStrings(GalleryUtils.slashDirectoryPath("html"), fileName, ".html");
 		}
 		else {
-			strInitialTmpFilePath = GalleryUtils.joinStrings(builder, GalleryUtils.slashDirectoryPath("html"), strTmpFileName, compressedSuffix);
+			strInitialTmpFilePath = GalleryUtils.joinStrings(GalleryUtils.slashDirectoryPath("html"), fileName, compressedSuffix);
 		}
 		return strInitialTmpFilePath;
 	}
 	
-	private static String getUncompressTmpFilePath(StringBuilder builder, String weblink) {
+	/**
+	 * @param fileName	
+	 * */
+	private static String getUncompressTmpFilePath(String fileName) {
 		String strUncompressTmpFilePath = null;
-		int iSlash = weblink.lastIndexOf("/");
-		String strTmpFileName = weblink.substring(iSlash + 1);
-		if (strTmpFileName.length() == 0) {
-			int iSlashTmp = weblink.lastIndexOf("/", iSlash - 1);
-			strTmpFileName = weblink.substring(iSlashTmp + 1, iSlash);
-		}
-		if (strTmpFileName.endsWith(".html")) {
-			strUncompressTmpFilePath = GalleryUtils.joinStrings(builder, GalleryUtils.slashDirectoryPath("html"), strTmpFileName);
+		if (fileName.endsWith(".html")) {
+			strUncompressTmpFilePath = GalleryUtils.joinStrings(GalleryUtils.slashDirectoryPath("html"), fileName);
 		} 
 		else {
-			strUncompressTmpFilePath = GalleryUtils.joinStrings(builder, GalleryUtils.slashDirectoryPath("html"), strTmpFileName, ".html");
+			strUncompressTmpFilePath = GalleryUtils.joinStrings(GalleryUtils.slashDirectoryPath("html"), fileName, ".html");
 		}
 		return strUncompressTmpFilePath;
 	}
@@ -277,6 +301,56 @@ public class GalleryUtils {
 		history.setEditor(DBConstants.DEFAULT_OPERATOR);
 		history.setEdate(date);
 		return history;
+	}
+	
+	public static String getUrlLastPathWithSuffix(String url) {
+		Pattern patternUrl = Pattern.compile(REGEX_URL_PATH_AND_PARAMS);
+		Matcher matcherUrl = patternUrl.matcher(url);
+		String strLastPath = EMPTY_STRING;
+		if (matcherUrl.find()) {
+			strLastPath = matcherUrl.group(1);
+		}
+		return strLastPath;
+	}
+	
+	public static String getUrlLastPathWithoutSuffix(String url) {
+		Pattern patternUrl = Pattern.compile(REGEX_URL_PATH_AND_PARAMS);
+		Matcher matcherUrl = patternUrl.matcher(url);
+		String strLastPath = EMPTY_STRING;
+		if (matcherUrl.find()) {
+			strLastPath = matcherUrl.group(2);
+		}
+		return strLastPath;
+	}
+	
+	public static String getUrlLastPathSuffix(String url) {
+		Pattern patternUrl = Pattern.compile(REGEX_URL_PATH_AND_PARAMS);
+		Matcher matcherUrl = patternUrl.matcher(url);
+		String strLastPath = EMPTY_STRING;
+		if (matcherUrl.find()) {
+			strLastPath = matcherUrl.group(3);
+		}
+		return strLastPath;
+	}
+	
+	public static Map<String, String> getUrlQueryParam(String url) {
+		Pattern patternUrl = Pattern.compile(REGEX_URL_PATH_AND_PARAMS);
+		Matcher matcherUrl = patternUrl.matcher(url);
+		Map<String, String> mapParams = new HashMap<>();
+		if (matcherUrl.find()) {
+			String strParams = matcherUrl.group(5);
+			String[] arrayParams = strParams.split("&");
+			for (String strParam : arrayParams) {
+				String[] arrayKeyValue = strParam.split("=");
+				if (arrayKeyValue.length >= 2) {
+					mapParams.put(arrayKeyValue[0], arrayKeyValue[1]);
+				}
+				else {
+					mapParams.put(strParam, EMPTY_STRING);
+				}
+			}
+		}
+		return mapParams;
 	}
 	
 	/**
