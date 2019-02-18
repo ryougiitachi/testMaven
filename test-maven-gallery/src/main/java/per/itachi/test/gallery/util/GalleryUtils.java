@@ -155,7 +155,7 @@ public class GalleryUtils {
 			logger.error("Failed to uncompress {} because file doesn't exist. ", strInitialTmpFilePath, e);
 		} 
 		catch (IOException e) {
-			logger.error("Failed to uncompress {}. ", e);
+			logger.error("Failed to uncompress {}. ", strInitialTmpFilePath, e);
 		} 
 		if (isSuccessful) {
 			return strUncompressFilePath;
@@ -199,11 +199,11 @@ public class GalleryUtils {
 			}
 		} 
 		catch (MalformedURLException e) {
-			logger.error("There is something with URL {}. ", e);
+			logger.error("There is something with URL {}. ", urlLink, e);
 			isSuccessful = false;
 		}
 		catch (IOException e) {
-			logger.error("Error occured when initialising connection {}. ", e);
+			logger.error("Error occured when initialising connection {}. ", urlLink, e);
 			isSuccessful = false;
 		}
 		finally {
