@@ -28,4 +28,10 @@ public class GalleryConstants {
 	public static final int PASER_STATUS_PROCESSING = 1;
 	public static final int PASER_STATUS_COMPLETED = 2;
 	public static final int PASER_STATUS_FAILED = 3;
+	
+	public static final String HTML_TAG_A = "a";
+	public static final String HTML_TAG_IMG = "img";
+	
+	public static final String HTML_ATTR_A_HREF = "href";
+	public static final String HTML_ATTR_IMG_SRC = "src";
 }

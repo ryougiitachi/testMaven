@@ -25,6 +25,7 @@ import org.jsoup.select.Elements;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import per.itachi.test.gallery.GalleryConstants;
 import per.itachi.test.gallery.conf.GalleryWebsite;
 import per.itachi.test.gallery.entity.SisZZOThreadPage;
 import per.itachi.test.gallery.entity.SisZZOTorrentPage;
@@ -165,14 +166,14 @@ public class SisZZOParser implements Parser {
 					Element elementCreator = elementTitleItem.selectFirst(SELECTOR_TITLE_CREATOR);
 					if (elementLink != null && elementCreator != null) { 
 						//TODO: more readable? 
-						String strCreatorHref = Entities.unescape(elementCreator.attr("href"));
+						String strCreatorHref = Entities.unescape(elementCreator.attr(GalleryConstants.HTML_ATTR_A_HREF));
 						Map<String, String> mapCreatorParams = GalleryUtils.getUrlQueryParam(strCreatorHref);
 						if (isSpecificUser(mapCreatorParams, strUID)) {
 							SisZZOThreadPage page = new SisZZOThreadPage();
 							page.setTitle(elementLink.text());
 							page.setCreatorName(elementCreator.text());
 							page.setCreatorUID(mapCreatorParams.get("uid"));
-							page.setUrlLink(WebUtils.getCompleteUrlLink(Entities.unescape(elementLink.attr("href")), this.baseUrl, strNextPageUrlLink));
+							page.setUrlLink(WebUtils.getCompleteUrlLink(Entities.unescape(elementLink.attr(GalleryConstants.HTML_ATTR_A_HREF)), this.baseUrl, strNextPageUrlLink));
 							threadHtmls.add(page);
 							++countTitle;
 						}
@@ -183,7 +184,7 @@ public class SisZZOParser implements Parser {
 				elementsNextPage = document.select(SELECTOR_TITLE_LIST_NEXT_PAGE);
 				if (elementsNextPage != null && elementsNextPage.size() > 0) {
 					Element elementNextPage = elementsNextPage.first();
-					strNextPageUrlLink = WebUtils.getCompleteUrlLink(Entities.unescape(elementNextPage.attr("href")), this.baseUrl, strNextPageUrlLink);
+					strNextPageUrlLink = WebUtils.getCompleteUrlLink(Entities.unescape(elementNextPage.attr(GalleryConstants.HTML_ATTR_A_HREF)), this.baseUrl, strNextPageUrlLink);
 					//anti-prohibit
 					antiProhibitForHtml();
 				} 
@@ -327,7 +328,7 @@ public class SisZZOParser implements Parser {
 		Element elementCdate = atticPost.selectFirst(SELECTOR_THREAD_ATTIC_CDATE);
 		Elements elementsTorrent = atticPost.select(SELECTOR_THREAD_ATTIC_ATTACHMENT_LINK);
 		if (elementCdate != null && elementsTorrent.size() >= 3) {
-			String strTorrentPageHref = Entities.unescape(elementsTorrent.get(1).attr("href"));
+			String strTorrentPageHref = Entities.unescape(elementsTorrent.get(1).attr(GalleryConstants.HTML_ATTR_A_HREF));
 			String strCompleteTorrentPageLink = WebUtils.getCompleteUrlLink(strTorrentPageHref, this.baseUrl, page.getUrlLink());
 			SisZZOTorrentPage torrentPage = new SisZZOTorrentPage();
 			torrentPage.setTorrentFileName(GalleryUtils.joinStrings(page.getCreatorName(), "-", 
@@ -350,7 +351,7 @@ public class SisZZOParser implements Parser {
 			logger.info("loadSnapshotPic: In the page {}, downloading {} pictures. ", page.getTitle(), elementsPic.size());
 			for (int i = 0; i < elementsPic.size(); i++) {
 				Element elementPic = elementsPic.get(i);
-				String strPicUrl = WebUtils.getCompleteUrlLink(Entities.unescape(elementPic.attr("src")), baseUrl, page.getUrlLink());
+				String strPicUrl = WebUtils.getCompleteUrlLink(Entities.unescape(elementPic.attr(GalleryConstants.HTML_ATTR_IMG_SRC)), baseUrl, page.getUrlLink());
 				String strImgPath = GalleryUtils.loadFileByURL(strPicUrl, headers, String.format("%05d-%s", i + 1, joinPicFileNameByURL(page, strPicUrl)), threadDir.toString());
 				logger.debug("loadSnapshotPic: downloaded {}. ", strImgPath);
 				//anti-prohibit
@@ -422,7 +423,7 @@ public class SisZZOParser implements Parser {
 				Element elementTorrent = document.selectFirst(SELECTOR_ATTACHMENT_LINK);
 				if (elementTorrent != null) {
 					logger.info("loadThreadTorrent: downloading torrent named as {}. ", page.getTorrentFileName());
-					String strCompleteTorrentLink = WebUtils.getCompleteUrlLink(Entities.unescape(elementTorrent.attr("href")), this.baseUrl, page.getReferPageLink());
+					String strCompleteTorrentLink = WebUtils.getCompleteUrlLink(Entities.unescape(elementTorrent.attr(GalleryConstants.HTML_ATTR_A_HREF)), this.baseUrl, page.getReferPageLink());
 					String strTorrentFilePath = GalleryUtils.loadFileByURL(strCompleteTorrentLink, mapHeaders, page.getTorrentFileName(), page.getThreadDirPath());
 					Files.copy(Paths.get(strTorrentFilePath), Paths.get(".", WEBSITE_DIRECTORY_NAME, page.getTorrentFileName()));//TODO: path is unsafe. 
 				}
