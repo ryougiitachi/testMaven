@@ -57,24 +57,25 @@ public class SisZZOParser implements Parser {
 	
 	private static final String SELECTOR_TITLE_LIST_NEXT_PAGE = "div#wrapper div div.pages_btns div.pages a.next";
 	
-	private static final String SELECTOR_THREAD_TITLE = 
-			"div#wrapper div form div.mainbox.viewthread table tbody tr td.postcontent div.postmessage.defaultpost h2";//TODO 
+	private static final String SELECTOR_THREAD_ATTIC = 
+			"div#wrapper div form div.mainbox.viewthread table tbody tr td.postcontent";
 	
-	private static final String SELECTOR_THREAD_CDATE = 
-			"div#wrapper div form div.mainbox.viewthread table tbody tr td.postcontent div.postinfo";
+	private static final String SELECTOR_THREAD_ATTIC_TITLE = 
+			"div.postmessage.defaultpost h2";//TODO 
 	
-	private static final String SELECTOR_THREAD_CONTENT = 
-			"div#wrapper div form div.mainbox.viewthread table tbody tr td.postcontent div.postmessage.defaultpost div.t_msgfont";//TODO 
+	private static final String SELECTOR_THREAD_ATTIC_CDATE = 
+			"div.postinfo";
 	
-	private static final String SELECTOR_THREAD_VIDEO_TITLE = "";//TODO 
+	private static final String SELECTOR_THREAD_ATTIC_CONTENT = 
+			"div.postmessage.defaultpost div.t_msgfont";//TODO 
 	
-	private static final String SELECTOR_THREAD_VIDEO_SNAPSHOT = 
-			"div#wrapper div form div.mainbox.viewthread table tbody tr td.postcontent div.postmessage.defaultpost div.t_msgfont img";//TODO 
+	private static final String SELECTOR_THREAD_ATTIC_PICTURE = 
+			"div.postmessage.defaultpost div.t_msgfont img";//TODO 
 	
-	private static final String SELECTOR_THREAD_TORRENT_LINK = 
-			"div#wrapper div form div.mainbox.viewthread table tbody tr td.postcontent div.postmessage.defaultpost div.box.postattachlist dl.t_attachlist dt a";//TODO
+	private static final String SELECTOR_THREAD_ATTIC_ATTACHMENT_LINK = 
+			"div.postmessage.defaultpost div.box.postattachlist dl.t_attachlist dt a";//TODO
 	
-	private static final String SELECTOR_TORRENT_LINK = 
+	private static final String SELECTOR_ATTACHMENT_LINK = 
 			"div.card > div.card-body > a.btn.btn-danger";//TODO 
 	
 	private static final String SPECIFIC_CREATOR_UID = "13033972";//TODO
@@ -232,38 +233,28 @@ public class SisZZOParser implements Parser {
 				String strHtmlFileName =  joinFileNameForThread(page, retryTime);
 				String strThreadHtmlPath = GalleryUtils.loadHtmlByURL(page.getUrlLink(), mapHeaders, strHtmlFileName);
 				page.setHtmlFilePath(strThreadHtmlPath);
-				Document document = Jsoup.parse(new File(strThreadHtmlPath), this.conf.getCharset());
-				//check whether or not page is valid. 
-				if (isValidHtmlPage(document) && isValidThreadPage(document)) {
-					retryTime = 0;
-				} 
-				else {
-					//retry
-					logger.info("loadThreadHtml: {} is invalid, and trying. ", strHtmlFileName);
-					++retryTime;
-					antiProhibitForHtml();
-					continue;
-				}
 				try {
-					Path dirThreadTitle = createThreadDirectory(page, dirWebsite);
-					loadIntroToReadme(document, dirThreadTitle);//readme
-					loadSnapshotPic(document, dirThreadTitle, page, mapHeaders);//preview image 
-					//attachment page link. 
-					logger.info("loadThreadHtml: for the page {}, parsing attachment page link. ", page.getTitle());
-					Element elementCdate = document.selectFirst(SELECTOR_THREAD_CDATE);
-					Elements elementsTorrent = document.select(SELECTOR_THREAD_TORRENT_LINK);
-					if (elementCdate != null && elementsTorrent.size() >= 3) {
-						String strTorrentPageHref = Entities.unescape(elementsTorrent.get(1).attr("href"));
-						String strCompleteTorrentPageLink = WebUtils.getCompleteUrlLink(strTorrentPageHref, this.baseUrl, page.getUrlLink());
-						SisZZOTorrentPage torrentPage = new SisZZOTorrentPage();
-						torrentPage.setTorrentFileName(GalleryUtils.joinStrings(page.getCreatorName(), "-", 
-								parseThreadCdateString(elementCdate), "-", page.getTitle()));
-						torrentPage.setReferPageLink(strCompleteTorrentPageLink);
-						torrentPage.setThreadDirPath(dirThreadTitle.toString());
+					Document document = Jsoup.parse(new File(strThreadHtmlPath), this.conf.getCharset());
+					//check whether or not page is valid. 
+					if (isValidHtmlPage(document) && isValidThreadPage(document)) {
+						retryTime = 0;
+					} 
+					else {
+						//retry
+						logger.info("loadThreadHtml: {} is invalid, and trying. ", strHtmlFileName);
+						++retryTime;
+						antiProhibitForHtml();
+						continue;
 					}
+					Path dirThreadTitle = createThreadDirectory(page, dirWebsite);
+					Element elementAtticPost = document.selectFirst(SELECTOR_THREAD_ATTIC);
+					extractIntroToReadme(elementAtticPost, dirThreadTitle);//readme
+					extractSnapshotPic(elementAtticPost, dirThreadTitle, page, mapHeaders);//preview image 
+					//attachment page link. 
+					extractAttachmentLink(elementAtticPost, dirThreadTitle, page);
 				} 
 				catch (IOException e) {
-					logger.error("Error occured when creating thread directory {}. ", page.getTitle(), e);
+					logger.error("Error occured when parsing thread {} html file {}. ", page.getTitle(), strThreadHtmlPath, e);
 				}
 				antiProhibitForHtml();
 			}
@@ -298,11 +289,14 @@ public class SisZZOParser implements Parser {
 	/**
 	 * create readme.txt
 	 * */
-	private void loadIntroToReadme(Document document, Path threadDir) {
+	private void extractIntroToReadme(Element atticPost, Path threadDir) {
+		if (atticPost == null) {
+			return;
+		}
 		Path fileReadme = Paths.get(threadDir.toString(), "readme.txt");
-		Element elementTitle = document.selectFirst(SELECTOR_THREAD_TITLE);
-		Element elementCdate = document.selectFirst(SELECTOR_THREAD_CDATE);
-		Element elementContent = document.selectFirst(SELECTOR_THREAD_CONTENT);
+		Element elementTitle = atticPost.selectFirst(SELECTOR_THREAD_ATTIC_TITLE);
+		Element elementCdate = atticPost.selectFirst(SELECTOR_THREAD_ATTIC_CDATE);
+		Element elementContent = atticPost.selectFirst(SELECTOR_THREAD_ATTIC_CONTENT);
 		try(BufferedWriter bw = Files.newBufferedWriter(fileReadme, Charset.defaultCharset())) {
 			if (elementTitle != null) {
 				bw.write(elementTitle.text());
@@ -328,11 +322,30 @@ public class SisZZOParser implements Parser {
 		}
 	}
 	
+	private void extractAttachmentLink(Element atticPost, Path threadTitleDir, SisZZOThreadPage page) {
+		logger.info("loadThreadHtml: for the page {}, parsing attachment page link. ", page.getTitle());
+		Element elementCdate = atticPost.selectFirst(SELECTOR_THREAD_ATTIC_CDATE);
+		Elements elementsTorrent = atticPost.select(SELECTOR_THREAD_ATTIC_ATTACHMENT_LINK);
+		if (elementCdate != null && elementsTorrent.size() >= 3) {
+			String strTorrentPageHref = Entities.unescape(elementsTorrent.get(1).attr("href"));
+			String strCompleteTorrentPageLink = WebUtils.getCompleteUrlLink(strTorrentPageHref, this.baseUrl, page.getUrlLink());
+			SisZZOTorrentPage torrentPage = new SisZZOTorrentPage();
+			torrentPage.setTorrentFileName(GalleryUtils.joinStrings(page.getCreatorName(), "-", 
+					parseThreadCdateString(elementCdate), "-", page.getTitle()));
+			torrentPage.setReferPageLink(strCompleteTorrentPageLink);
+			torrentPage.setThreadDirPath(threadTitleDir.toString());
+		}
+		
+	}
+	
 	/**
 	 * download preview image. 
 	 * */
-	private void loadSnapshotPic(Document document, Path threadDir, SisZZOThreadPage page, Map<String, String> headers) {
-		Elements elementsPic = document.select(SELECTOR_THREAD_VIDEO_SNAPSHOT);//TODO 
+	private void extractSnapshotPic(Element atticPost, Path threadDir, SisZZOThreadPage page, Map<String, String> headers) {
+		if (atticPost == null) {
+			return;
+		}
+		Elements elementsPic = atticPost.select(SELECTOR_THREAD_ATTIC_PICTURE);//TODO 
 		if (elementsPic.size() > 0) {//TODO 
 			logger.info("loadSnapshotPic: In the page {}, downloading {} pictures. ", page.getTitle(), elementsPic.size());
 			for (int i = 0; i < elementsPic.size(); i++) {
@@ -350,18 +363,21 @@ public class SisZZOParser implements Parser {
 		if (urlPicture == null) {
 			return GalleryUtils.EMPTY_STRING;
 		}
-		//with query parameters
+		//without query parameters
 		String strFileName = GalleryUtils.getUrlLastPathWithoutSuffix(urlPicture);
 		String strSuffix = GalleryUtils.getUrlLastPathSuffix(urlPicture);
-		if (strSuffix == null || strSuffix.length() == 0) {
+		if (".jpg".equalsIgnoreCase(strSuffix) || ".jpeg".equalsIgnoreCase(strSuffix) || ".jpe".equalsIgnoreCase(strSuffix) 
+				|| ".png".equalsIgnoreCase(strSuffix) || ".bmp".equalsIgnoreCase(strSuffix) || ".gif".equalsIgnoreCase(strSuffix) 
+				|| ".tif".equalsIgnoreCase(strSuffix) || ".icon".equalsIgnoreCase(strSuffix)) {
 			return GalleryUtils.joinStrings(strFileName, strSuffix);
-		} 
-		else {
-			return GalleryUtils.joinStrings(strFileName);
 		}
-		//without query parameters
-//		Map<String, String> mapParams = GalleryUtils.getUrlQueryParam(urlPicture);
-//		return GalleryUtils.EMPTY_STRING;
+		//with query parameters
+		Map<String, String> mapParams = GalleryUtils.getUrlQueryParam(urlPicture);
+		String strId = mapParams.get("id");
+		if (strId != null && mapParams.containsKey("jpg")) {
+			return GalleryUtils.joinStrings(strFileName, "-", strId, ".jpg");
+		}
+		return GalleryUtils.EMPTY_STRING;
 	}
 	
 	private String parseThreadCdateString(Element cdate) {
@@ -403,7 +419,7 @@ public class SisZZOParser implements Parser {
 					antiProhibitForHtml();
 					continue;
 				}
-				Element elementTorrent = document.selectFirst(SELECTOR_TORRENT_LINK);
+				Element elementTorrent = document.selectFirst(SELECTOR_ATTACHMENT_LINK);
 				if (elementTorrent != null) {
 					logger.info("loadThreadTorrent: downloading torrent named as {}. ", page.getTorrentFileName());
 					String strCompleteTorrentLink = WebUtils.getCompleteUrlLink(Entities.unescape(elementTorrent.attr("href")), this.baseUrl, page.getReferPageLink());
@@ -449,7 +465,7 @@ public class SisZZOParser implements Parser {
 	}
 	
 	private boolean isValidThreadPage(Document document) {
-		Elements elements = document.select(SELECTOR_THREAD_TITLE);
+		Elements elements = document.select(SELECTOR_THREAD_ATTIC);
 		if (elements.size() > 0) {
 			return true;
 		}
@@ -457,7 +473,7 @@ public class SisZZOParser implements Parser {
 	}
 	
 	private boolean isValidAttachmentPage(Document document) {
-		Elements elements = document.select(SELECTOR_TORRENT_LINK);
+		Elements elements = document.select(SELECTOR_ATTACHMENT_LINK);
 		if (elements.size() > 0) {
 			return true;
 		}
