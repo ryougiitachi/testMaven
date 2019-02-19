@@ -383,29 +383,35 @@ public class GalleryUtils {
 			//port
 			String strPort = matcher.group(MATCHER_IDX_WEBSITE_ADDRESS_PORT);
 			int iPort = 0;
-			try {
-				iPort = Integer.parseInt(strPort.substring(1));
-			} 
-			catch (NumberFormatException e) {
-				logger.error("Failed to convert {} as integer", strPort, e);
+			if (strPort != null) {
+				try {
+					iPort = Integer.parseInt(strPort.substring(1));
+				} 
+				catch (NumberFormatException e) {
+					logger.error("Failed to convert {} as integer", strPort, e);
+				}
 			}
 			//paths
 			String strPaths = matcher.group(MATCHER_IDX_WEBSITE_ADDRESS_PATHS);
 			List<String> listPath = new ArrayList<>();
-			for (String strPath : strPaths.split("/")) {
-				listPath.add(strPath);
+			if (strPaths != null) {
+				for (String strPath : strPaths.split("/")) {
+					listPath.add(strPath);
+				}
 			}
 			//parameters
 			String strParams = matcher.group(MATCHER_IDX_WEBSITE_ADDRESS_PARAMS);
 			Map<String, String> mapParams = new HashMap<>();
-			String[] arrayParams = strParams.split("&");
-			for (String strParam : arrayParams) {
-				String[] arrayKeyValue = strParam.split("=");
-				if (arrayKeyValue.length >= 2) {
-					mapParams.put(arrayKeyValue[0], arrayKeyValue[1]);
-				}
-				else {
-					mapParams.put(strParam, EMPTY_STRING);
+			if (strParams != null) {
+				String[] arrayParams = strParams.split("&");
+				for (String strParam : arrayParams) {
+					String[] arrayKeyValue = strParam.split("=");
+					if (arrayKeyValue.length >= 2) {
+						mapParams.put(arrayKeyValue[0], arrayKeyValue[1]);
+					}
+					else {
+						mapParams.put(strParam, EMPTY_STRING);
+					}
 				}
 			}
 			//fill 

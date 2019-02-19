@@ -72,7 +72,7 @@ public class SisZZOParser implements Parser {
 			"div.postmessage.defaultpost div.t_msgfont";//TODO 
 	
 	private static final String SELECTOR_THREAD_ATTIC_PICTURE = 
-			"div.postmessage.defaultpost div.t_msgfont img";//TODO 
+			"div.postmessage.defaultpost > div.t_msgfont > img";//TODO 
 	
 	private static final String SELECTOR_THREAD_ATTIC_ATTACHMENT_LINK = 
 			"div.postmessage.defaultpost div.box.postattachlist dl.t_attachlist dt a";//TODO
@@ -349,7 +349,7 @@ public class SisZZOParser implements Parser {
 				String strPicUrl = WebUtils.getCompleteUrlLink(Entities.unescape(strPicImgSrc), baseUrl, page.getUrlLink());
 				WebsiteAddress address = GalleryUtils.parseWebsiteAddressByURL(strPicUrl);
 				headers.put(GalleryConstants.HTTP_HEADER_HOST, address.getDomain());
-				logger.info("loadSnapshotPic: in the topic {}, downloading src:{} complete:. ", page.getTitle(), strPicImgSrc, strPicUrl);
+				logger.info("loadSnapshotPic: in the topic {}, downloading src:{} complete:{}. ", page.getTitle(), strPicImgSrc, strPicUrl);
 				String strImgPath = GalleryUtils.loadFileByURL(strPicUrl, headers, String.format("%05d-%s", i + 1, joinPicFileNameByURL(page, strPicUrl)), threadDir.toString());
 				logger.info("loadSnapshotPic: in the topic {}, downloaded {}. ", page.getTitle(), strImgPath);
 				//anti-prohibit

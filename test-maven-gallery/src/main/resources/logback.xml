@@ -146,16 +146,16 @@
 		</encoder>
 	</appender>
 	
-	<logger name="per.itachi.test.gallery" level="DEBUG">
+	<logger name="per.itachi.test.gallery" level="DEBUG" additivity="false">
 		<appender-ref ref="STDOUT" />
 	</logger>
-	<logger name="per.itachi.test.gallery" level="INFO">
+	<logger name="per.itachi.test.gallery" level="INFO" additivity="false">
 		<appender-ref ref="FILE" />
 	</logger>
 	
 	<root level="debug">
 		<!-- 控制台输出 -->
-		<appender-ref ref="STDOUT" />
-		<appender-ref ref="FILE" />
+<!-- 		<appender-ref ref="STDOUT" /> -->
+<!-- 		<appender-ref ref="FILE" /> -->
 	</root>
 </configuration>
