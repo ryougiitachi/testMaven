@@ -29,6 +29,7 @@ import per.itachi.test.gallery.GalleryConstants;
 import per.itachi.test.gallery.conf.GalleryWebsite;
 import per.itachi.test.gallery.entity.SisZZOThreadPage;
 import per.itachi.test.gallery.entity.SisZZOTorrentPage;
+import per.itachi.test.gallery.entity.WebsiteAddress;
 import per.itachi.test.gallery.util.GalleryUtils;
 import per.itachi.test.gallery.util.WebUtils;
 
@@ -249,7 +250,7 @@ public class SisZZOParser implements Parser {
 					}
 					Path dirThreadTitle = createThreadDirectory(page, dirWebsite);
 					Element elementAtticPost = document.selectFirst(SELECTOR_THREAD_ATTIC);
-					extractIntroToReadme(elementAtticPost, dirThreadTitle);//readme
+					extractIntroToReadme(elementAtticPost, dirThreadTitle, page);//readme
 					extractSnapshotPic(elementAtticPost, dirThreadTitle, page, mapHeaders);//preview image 
 					//attachment page link. 
 					extractAttachmentLink(elementAtticPost, dirThreadTitle, page);
@@ -290,7 +291,7 @@ public class SisZZOParser implements Parser {
 	/**
 	 * create readme.txt
 	 * */
-	private void extractIntroToReadme(Element atticPost, Path threadDir) {
+	private void extractIntroToReadme(Element atticPost, Path threadDir, SisZZOThreadPage page) {
 		if (atticPost == null) {
 			return;
 		}
@@ -299,18 +300,26 @@ public class SisZZOParser implements Parser {
 		Element elementCdate = atticPost.selectFirst(SELECTOR_THREAD_ATTIC_CDATE);
 		Element elementContent = atticPost.selectFirst(SELECTOR_THREAD_ATTIC_CONTENT);
 		try(BufferedWriter bw = Files.newBufferedWriter(fileReadme, Charset.defaultCharset())) {
+			//url link 
+			bw.write(page.getUrlLink());
+			bw.newLine();
+			bw.newLine();
+			bw.flush();
+			//title 
 			if (elementTitle != null) {
 				bw.write(elementTitle.text());
 				bw.newLine();
 				bw.newLine();
 				bw.flush();
 			}
+			//cdate 
 			if (elementCdate != null) {
 				bw.write(elementCdate.text());
 				bw.newLine();
 				bw.newLine();
 				bw.flush();
 			}
+			//content 
 			if (elementContent != null) {
 				bw.write(elementContent.html());//using html() because of lots of links.
 				bw.newLine();
@@ -323,6 +332,35 @@ public class SisZZOParser implements Parser {
 		}
 	}
 	
+	/**
+	 * download preview image. 
+	 * */
+	private void extractSnapshotPic(Element atticPost, Path threadDir, SisZZOThreadPage page, Map<String, String> headers) {
+		if (atticPost == null) {
+			return;
+		}
+		Elements elementsPic = atticPost.select(SELECTOR_THREAD_ATTIC_PICTURE); 
+		if (elementsPic.size() > 0) {//TODO 
+			logger.info("loadSnapshotPic: In the page {}, downloading {} pictures. ", page.getTitle(), elementsPic.size());
+			headers.put(GalleryConstants.HTTP_HEADER_REFERER, page.getUrlLink());
+			for (int i = 0; i < elementsPic.size(); i++) {
+				Element elementPic = elementsPic.get(i);
+				String strPicImgSrc = elementPic.attr(GalleryConstants.HTML_ATTR_IMG_SRC);
+				String strPicUrl = WebUtils.getCompleteUrlLink(Entities.unescape(strPicImgSrc), baseUrl, page.getUrlLink());
+				WebsiteAddress address = GalleryUtils.parseWebsiteAddressByURL(strPicUrl);
+				headers.put(GalleryConstants.HTTP_HEADER_HOST, address.getDomain());
+				logger.info("loadSnapshotPic: in the topic {}, downloading src:{} complete:. ", page.getTitle(), strPicImgSrc, strPicUrl);
+				String strImgPath = GalleryUtils.loadFileByURL(strPicUrl, headers, String.format("%05d-%s", i + 1, joinPicFileNameByURL(page, strPicUrl)), threadDir.toString());
+				logger.info("loadSnapshotPic: in the topic {}, downloaded {}. ", page.getTitle(), strImgPath);
+				//anti-prohibit
+				antiProhibitForPic();
+			}
+		}
+	}
+	
+	/**
+	 * capture attachment link 
+	 * */
 	private void extractAttachmentLink(Element atticPost, Path threadTitleDir, SisZZOThreadPage page) {
 		logger.info("loadThreadHtml: for the page {}, parsing attachment page link. ", page.getTitle());
 		Element elementCdate = atticPost.selectFirst(SELECTOR_THREAD_ATTIC_CDATE);
@@ -337,27 +375,6 @@ public class SisZZOParser implements Parser {
 			torrentPage.setThreadDirPath(threadTitleDir.toString());
 		}
 		
-	}
-	
-	/**
-	 * download preview image. 
-	 * */
-	private void extractSnapshotPic(Element atticPost, Path threadDir, SisZZOThreadPage page, Map<String, String> headers) {
-		if (atticPost == null) {
-			return;
-		}
-		Elements elementsPic = atticPost.select(SELECTOR_THREAD_ATTIC_PICTURE);//TODO 
-		if (elementsPic.size() > 0) {//TODO 
-			logger.info("loadSnapshotPic: In the page {}, downloading {} pictures. ", page.getTitle(), elementsPic.size());
-			for (int i = 0; i < elementsPic.size(); i++) {
-				Element elementPic = elementsPic.get(i);
-				String strPicUrl = WebUtils.getCompleteUrlLink(Entities.unescape(elementPic.attr(GalleryConstants.HTML_ATTR_IMG_SRC)), baseUrl, page.getUrlLink());
-				String strImgPath = GalleryUtils.loadFileByURL(strPicUrl, headers, String.format("%05d-%s", i + 1, joinPicFileNameByURL(page, strPicUrl)), threadDir.toString());
-				logger.debug("loadSnapshotPic: downloaded {}. ", strImgPath);
-				//anti-prohibit
-				antiProhibitForPic();
-			}
-		}
 	}
 	
 	private String joinPicFileNameByURL(SisZZOThreadPage page, String urlPicture) {

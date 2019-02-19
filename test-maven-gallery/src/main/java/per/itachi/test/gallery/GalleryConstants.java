@@ -7,6 +7,9 @@ public class GalleryConstants {
 	public static final String HTTP_HEADER_ACCEPT = "Accept";
 	public static final String HTTP_HEADER_ACCEPT_ENCODING = "Accept-Encoding";
 	public static final String HTTP_HEADER_CACHE_CONTROL = "Cache-Control";
+	public static final String HTTP_HEADER_PRAGMA = "Pragma";
+	public static final String HTTP_HEADER_HOST = "Host";
+	public static final String HTTP_HEADER_REFERER = "Referer";
 	public static final String HTTP_HEADER_USER_AGENT = "User-Agent";
 	
 	public static final String HTTP_METHOD_GET = "GET";

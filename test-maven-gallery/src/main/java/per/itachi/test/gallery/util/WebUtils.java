@@ -10,8 +10,6 @@ public class WebUtils {
 	
 	public static final String REGEX_WEBSITE_LINK = "(https?://[\\w-]+(\\.[\\w-]+)*(:\\d+)?)(/[\\w-\\.]+)*(\\?([\\w-\\.%=]+(&[\\w-\\.%=]+)*))?";
 	
-	public static final String REGEX_URL_FILENAME = "/?(\\w+\\.\\w+)$";
-	
 	public static String getBaseUrl(String urlPath) {
 		Pattern pattern = Pattern.compile(REGEX_WEBSITE_LINK);
 		Matcher matcher = pattern.matcher(urlPath);

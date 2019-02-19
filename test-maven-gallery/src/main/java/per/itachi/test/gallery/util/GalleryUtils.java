@@ -13,6 +13,7 @@ import java.net.Proxy;
 import java.net.URL;
 import java.net.URLConnection;
 import java.nio.file.Paths;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -26,6 +27,7 @@ import org.slf4j.LoggerFactory;
 
 import per.itachi.test.gallery.GalleryConstants;
 import per.itachi.test.gallery.entity.GalleryHistory;
+import per.itachi.test.gallery.entity.WebsiteAddress;
 import per.itachi.test.gallery.persist.DBConstants;
 
 public class GalleryUtils {
@@ -33,6 +35,18 @@ public class GalleryUtils {
 	private static final Logger logger = LoggerFactory.getLogger(GalleryUtils.class);
 	
 	public static final String EMPTY_STRING = "";
+	
+	public static final String REGEX_WEBSITE_ADDRESS = "(https?://([\\w-]+(\\.[\\w-]+)*(:\\d+)?))((/[\\w-\\.]+)*)(\\?([\\w-\\.%=]+(&[\\w-\\.%=]+)*))?";
+	
+	public static final int MATCHER_IDX_WEBSITE_ADDRESS_URL = 1;
+	
+	public static final int MATCHER_IDX_WEBSITE_ADDRESS_DOMAIN = 2;
+	
+	public static final int MATCHER_IDX_WEBSITE_ADDRESS_PORT = 4;//format ":9090"
+	
+	public static final int MATCHER_IDX_WEBSITE_ADDRESS_PATHS = 5;
+	
+	public static final int MATCHER_IDX_WEBSITE_ADDRESS_PARAMS = 7;
 	
 	public static final String REGEX_URL_PATH_AND_PARAMS = "/?(([\\w-_]+)(\\.[\\w-_\\.]+))(\\?([\\w-\\.%=]+(&[\\w-\\.%=]+)*))?$";
 	
@@ -81,6 +95,7 @@ public class GalleryUtils {
 		mapHeaders.put(GalleryConstants.HTTP_HEADER_ACCEPT, "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8");
 		mapHeaders.put(GalleryConstants.HTTP_HEADER_ACCEPT_ENCODING, "gzip, deflate, sdch, br");
 		mapHeaders.put(GalleryConstants.HTTP_HEADER_CACHE_CONTROL, "no-cache");
+		mapHeaders.put(GalleryConstants.HTTP_HEADER_PRAGMA, "no-cache");
 		return mapHeaders;
 	}
 	
@@ -351,6 +366,56 @@ public class GalleryUtils {
 			}
 		}
 		return mapParams;
+	}
+	
+	public static WebsiteAddress parseWebsiteAddressByURL(String url) {
+		if (url == null) {
+			return null;
+		}
+		WebsiteAddress entity = new WebsiteAddress();
+		Pattern pattern = Pattern.compile(REGEX_WEBSITE_ADDRESS);
+		Matcher matcher = pattern.matcher(url);
+		if (matcher.find()) {
+			//domain with protocal 
+			String strDomainWithProtocal = matcher.group(MATCHER_IDX_WEBSITE_ADDRESS_URL);
+			//domain 
+			String strDomain = matcher.group(MATCHER_IDX_WEBSITE_ADDRESS_DOMAIN);
+			//port
+			String strPort = matcher.group(MATCHER_IDX_WEBSITE_ADDRESS_PORT);
+			int iPort = 0;
+			try {
+				iPort = Integer.parseInt(strPort.substring(1));
+			} 
+			catch (NumberFormatException e) {
+				logger.error("Failed to convert {} as integer", strPort, e);
+			}
+			//paths
+			String strPaths = matcher.group(MATCHER_IDX_WEBSITE_ADDRESS_PATHS);
+			List<String> listPath = new ArrayList<>();
+			for (String strPath : strPaths.split("/")) {
+				listPath.add(strPath);
+			}
+			//parameters
+			String strParams = matcher.group(MATCHER_IDX_WEBSITE_ADDRESS_PARAMS);
+			Map<String, String> mapParams = new HashMap<>();
+			String[] arrayParams = strParams.split("&");
+			for (String strParam : arrayParams) {
+				String[] arrayKeyValue = strParam.split("=");
+				if (arrayKeyValue.length >= 2) {
+					mapParams.put(arrayKeyValue[0], arrayKeyValue[1]);
+				}
+				else {
+					mapParams.put(strParam, EMPTY_STRING);
+				}
+			}
+			//fill 
+			entity.setDomainWithProtocal(strDomainWithProtocal);
+			entity.setDomain(strDomain);
+			entity.setPort(iPort);
+			entity.setPaths(listPath);
+			entity.setQueryParams(mapParams);
+		}
+		return entity;
 	}
 	
 	/**
