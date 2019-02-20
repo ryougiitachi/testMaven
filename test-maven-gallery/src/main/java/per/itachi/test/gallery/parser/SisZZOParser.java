@@ -177,6 +177,7 @@ public class SisZZOParser implements Parser {
 							page.setUrlLink(WebUtils.getCompleteUrlLink(Entities.unescape(elementLink.attr(GalleryConstants.HTML_ATTR_A_HREF)), this.baseUrl, strNextPageUrlLink));
 							threadHtmls.add(page);
 							++countTitle;
+							logger.info("loadTitleListHtml: found the thread {} with url {}. ", page.getTitle(), page.getUrlLink());
 						}
 					}
 				}
@@ -196,7 +197,7 @@ public class SisZZOParser implements Parser {
 			while (strNextPageUrlLink != null);
 		} 
 		catch (IOException e) {
-			logger.error("Error occured when parsing title list. ", e);
+			logger.error("loadTitleListHtml: Error occured when parsing title list. ", e);
 		}
 	}
 	
@@ -230,7 +231,9 @@ public class SisZZOParser implements Parser {
 		int retryTime = 0;
 		try {
 			Path dirWebsite = createMainDirectory();
-			for (SisZZOThreadPage page : threadHtmls) {
+			int i = 0;
+			while (i < threadHtmls.size()) {
+				SisZZOThreadPage page = threadHtmls.get(i);
 				logger.info("loadThreadHtml: parsing the page with title {} and url {}. ", page.getTitle(), page.getCreatorName());
 				String strHtmlFileName =  joinFileNameForThread(page, retryTime);
 				String strThreadHtmlPath = GalleryUtils.loadHtmlByURL(page.getUrlLink(), mapHeaders, strHtmlFileName);
@@ -254,15 +257,16 @@ public class SisZZOParser implements Parser {
 					extractSnapshotPic(elementAtticPost, dirThreadTitle, page, mapHeaders);//preview image 
 					//attachment page link. 
 					extractAttachmentLink(elementAtticPost, dirThreadTitle, page);
+					++i;
 				} 
 				catch (IOException e) {
-					logger.error("Error occured when parsing thread {} html file {}. ", page.getTitle(), strThreadHtmlPath, e);
+					logger.error("loadThreadHtml: Error occured when parsing thread {} html file {}. ", page.getTitle(), strThreadHtmlPath, e);
 				}
 				antiProhibitForHtml();
 			}
 		} 
 		catch (IOException e) {
-			logger.error("Error occured when parsing list of threads. ", e);
+			logger.error("loadThreadHtml: Error occured when parsing list of threads. ", e);
 		}
 	}
 	
@@ -420,8 +424,11 @@ public class SisZZOParser implements Parser {
 		logger.info("loadThreadTorrent: Start downloading {} torrents. ", threadTorrents.size());
 		Map<String, String> mapHeaders = GalleryUtils.getDefaultRequestHeaders();
 		int retryTime = 0;
-		for (SisZZOTorrentPage page : threadTorrents) {
-			String strHtmlFileName = joinFileNameForThreadTorrent(page, retryTime);
+		int i = 0;
+		while (i < threadTorrents.size()) {
+			SisZZOTorrentPage page = threadTorrents.get(i);
+			logger.info("loadThreadHtml: downloading the page with title {} and url {}. ", page.getReferPageLink(), page.getTorrentFileName());
+			String strHtmlFileName = joinFileNameForAttachment(page, retryTime);
 			String strHtmlFilePath = GalleryUtils.loadHtmlByURL(page.getReferPageLink(), mapHeaders, strHtmlFileName);
 			File fileHtml = new File(strHtmlFilePath);
 			try {
@@ -444,15 +451,16 @@ public class SisZZOParser implements Parser {
 					String strTorrentFilePath = GalleryUtils.loadFileByURL(strCompleteTorrentLink, mapHeaders, page.getTorrentFileName(), page.getThreadDirPath());
 					Files.copy(Paths.get(strTorrentFilePath), Paths.get(".", WEBSITE_DIRECTORY_NAME, page.getTorrentFileName()));//TODO: path is unsafe. 
 				}
-				antiProhibitForHtml();
+				++i;
 			} 
 			catch (IOException e) {
 				logger.error("Error occured when parsing torrent refer page {}. ", strHtmlFilePath, e);
 			}
+			antiProhibitForHtml();
 		}
 	}
 	
-	private String joinFileNameForThreadTorrent(SisZZOTorrentPage page, int retryTime) {
+	private String joinFileNameForAttachment(SisZZOTorrentPage page, int retryTime) {
 		String strBasePath = GalleryUtils.getUrlLastPathWithoutSuffix(page.getReferPageLink());
 		Map<String, String> mapParams = GalleryUtils.getUrlQueryParam(page.getReferPageLink());
 		return String.format("%s-%s-aid%s-%03d.html", this.conf.getName(), strBasePath, mapParams.get("aid"), retryTime);
