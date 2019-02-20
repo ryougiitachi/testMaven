@@ -36,7 +36,7 @@ public class GalleryUtils {
 	
 	public static final String EMPTY_STRING = "";
 	
-	public static final String REGEX_WEBSITE_ADDRESS = "(https?://([\\w-]+(\\.[\\w-]+)*(:\\d+)?))((/[\\w-\\.]+)*)(\\?([\\w-\\.%=]+(&[\\w-\\.%=]+)*))?";
+	public static final String REGEX_WEBSITE_ADDRESS = "(https?://([\\w-]+(\\.[\\w-]+)*(:\\d+)?))((/[\\w-_\\.]+)*)(\\?([\\w-\\.%=]+(&[\\w-\\.%=]+)*))?";
 	
 	public static final int MATCHER_IDX_WEBSITE_ADDRESS_URL = 1;
 	
