@@ -48,7 +48,7 @@ public class GalleryUtils {
 	
 	public static final int MATCHER_IDX_WEBSITE_ADDRESS_PARAMS = 7;
 	
-	public static final String REGEX_URL_PATH_AND_PARAMS = "/?(([\\w-_]+)(\\.[\\w-_\\.]+))(\\?([\\w-\\.%=]+(&[\\w-\\.%=]+)*))?$";
+	public static final String REGEX_URL_PATH_AND_PARAMS = "/?(([\\w-_]+)(\\.[\\w-_\\.]+)*)(\\?([\\w-\\.%=]+(&[\\w-\\.%=]+)*))?$";
 	
 	public static String joinStrings(Object... args) {
 		StringBuilder builder = BufferUtils.getLocalStringBuilder();
