@@ -10,7 +10,7 @@ import org.slf4j.LoggerFactory;
 
 import per.itachi.test.gallery.GalleryConstants;
 import per.itachi.test.gallery.conf.GalleryWebsite;
-import per.itachi.test.gallery.conf.GalleryWebsiteConf;
+import per.itachi.test.gallery.conf.GalleryWebsiteConfig;
 import per.itachi.test.gallery.entity.FrameGalleryItemEntity;
 import per.itachi.test.gallery.entity.GalleryHistory;
 import per.itachi.test.gallery.parser.Parser;
@@ -26,7 +26,7 @@ public class GalleryParserRunnable implements ControllableRunnable {
 	
 	private BlockingQueue<FrameGalleryItemEntity> states;
 	
-	private GalleryWebsiteConf confGalleryWebsite;
+	private GalleryWebsiteConfig confGalleryWebsite;
 	
 	public GalleryParserRunnable(BlockingQueue<FrameGalleryItemEntity> links, BlockingQueue<FrameGalleryItemEntity> states) {
 		this.links = links;
@@ -101,7 +101,7 @@ public class GalleryParserRunnable implements ControllableRunnable {
 				try {
 					parser = instantiateNewParser(clazzParser, strUrlLink);
 					parser.setBaseUrl(strBaseUrl);
-					parser.setGalleryWebsiteConf(website);
+					parser.setGalleryWebsiteConfig(confGalleryWebsite);
 					lStartPoint = System.currentTimeMillis();
 					parser.execute();
 					lEndPoint = System.currentTimeMillis();
@@ -154,7 +154,7 @@ public class GalleryParserRunnable implements ControllableRunnable {
 	}
 	
 	private void initialise() {
-		confGalleryWebsite = GalleryWebsiteConf.load(GalleryConstants.DEFAULT_WEBSITE_CONF_PATH);
+		confGalleryWebsite = GalleryWebsiteConfig.load(GalleryConstants.DEFAULT_WEBSITE_CONF_PATH);
 	}
 
 	private Parser instantiateNewParser(Class<?> clazzParser, String link) 

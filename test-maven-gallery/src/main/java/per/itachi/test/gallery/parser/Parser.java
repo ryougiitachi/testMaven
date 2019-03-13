@@ -1,6 +1,6 @@
 package per.itachi.test.gallery.parser;
 
-import per.itachi.test.gallery.conf.GalleryWebsite;
+import per.itachi.test.gallery.conf.GalleryWebsiteConfig;
 
 public interface Parser {
 	
@@ -8,7 +8,7 @@ public interface Parser {
 	
 	void setBaseUrl(String baseUrl);
 	
-	void setGalleryWebsiteConf(GalleryWebsite conf);
+	void setGalleryWebsiteConfig(GalleryWebsiteConfig config);
 
 	String getTitle();
 }

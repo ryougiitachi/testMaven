@@ -23,6 +23,7 @@ import org.slf4j.LoggerFactory;
 
 import per.itachi.test.gallery.GalleryConstants;
 import per.itachi.test.gallery.conf.GalleryWebsite;
+import per.itachi.test.gallery.conf.GalleryWebsiteConfig;
 import per.itachi.test.gallery.entity.NineSixxxNetPage;
 import per.itachi.test.gallery.util.GalleryUtils;
 import per.itachi.test.gallery.util.WebUtils;
@@ -31,12 +32,16 @@ public class NineSixxxNetParser implements Parser {
 	
 	private static final String SELECTOR_TITLE = 
 			"section.container div.content-wrap div.content header.article-header h1.article-title";
+	
 	private static final String SELECTOR_PUBLISH_DATE = 
 			"section.container div.content-wrap div.content header.article-header ul.article-meta>li";
+	
 	private static final String SELECTOR_INTRODUCTION = 
 			"section.container div.content-wrap div.content article.article-content p";
+	
 	private static final String SELECTOR_NEXT_PAGE = 
 			"section.container div.content-wrap div.content div.pagination.pagination-multi ul li.next-page a";
+	
 	private static final String SELECTOR_IMG = 
 			"section.container div.content-wrap div.content article.article-content p>img";
 	
@@ -46,7 +51,9 @@ public class NineSixxxNetParser implements Parser {
 	
 	private String baseUrl;
 	
-	private GalleryWebsite conf;
+	private GalleryWebsiteConfig config;
+	
+	private GalleryWebsite websiteConfig;
 	
 	private String title;
 	
@@ -61,6 +68,7 @@ public class NineSixxxNetParser implements Parser {
 
 	@Override
 	public void execute() {
+		this.websiteConfig = config.getWebsite(this.baseUrl);
 		String strUrlLink = this.urlLink;
 		logger.info("Start parsing NineSixxxNet URL {}", strUrlLink);
 		Map<String, String> mapHeaders = GalleryUtils.getDefaultRequestHeaders();
@@ -93,7 +101,7 @@ public class NineSixxxNetParser implements Parser {
 	private String generatePicDirectory(String tmpHtmlPath) throws IOException {
 		StringBuilder builder = new StringBuilder();
 		File fileTmpHtmlPath = new File(tmpHtmlPath);
-		Document document = Jsoup.parse(fileTmpHtmlPath, this.conf.getCharset());//GBK
+		Document document = Jsoup.parse(fileTmpHtmlPath, this.websiteConfig.getCharset());//GBK
 		Element elementTitle = document.selectFirst(SELECTOR_TITLE);
 		String strTitle = this.title = elementTitle.text();
 		String strPicDirPath = GalleryUtils.joinStrings(builder, 
@@ -154,7 +162,7 @@ public class NineSixxxNetParser implements Parser {
 		
 		Random random = new Random(System.currentTimeMillis());
 		File fileTmpHtmlPath = new File(strTmpFilePath);
-		Document document = Jsoup.parse(fileTmpHtmlPath, this.conf.getCharset());//GBK
+		Document document = Jsoup.parse(fileTmpHtmlPath, this.websiteConfig.getCharset());//GBK
 		for(elementsNextPage = document.select(SELECTOR_NEXT_PAGE); 
 				elementsNextPage.size() > 0;
 				elementsNextPage = document.select(SELECTOR_NEXT_PAGE)) {
@@ -162,7 +170,7 @@ public class NineSixxxNetParser implements Parser {
 			strNextLink = WebUtils.getCompleteUrlLink(builder, elementNextPage.attr("href"), this.baseUrl, strCurrUrl);
 			strTmpFilePath = GalleryUtils.loadHtmlByURL(strNextLink, headers);
 			fileTmpHtmlPath = new File(strTmpFilePath);
-			document = Jsoup.parse(fileTmpHtmlPath, this.conf.getCharset());
+			document = Jsoup.parse(fileTmpHtmlPath, this.websiteConfig.getCharset());
 			strCurrUrl = strNextLink;
 			page = new NineSixxxNetPage();
 			page.setCurrUrlLink(strCurrUrl);
@@ -179,7 +187,7 @@ public class NineSixxxNetParser implements Parser {
 	 * */
 	private void antiProhibitForHtml(Random random) {
 		try {
-			long lInterval = random.nextInt(conf.getLoadHtmlIntervalOffset()) + conf.getLoadHtmlIntervalBase();
+			long lInterval = random.nextInt(websiteConfig.getLoadHtmlIntervalOffset()) + websiteConfig.getLoadHtmlIntervalBase();
 			logger.debug("The current thread will sleep {} milliseconds.", lInterval);
 			Thread.sleep(lInterval);
 		} 
@@ -196,7 +204,7 @@ public class NineSixxxNetParser implements Parser {
 		Elements elementsImg = null;
 		for (NineSixxxNetPage page : tmpFilePaths) {
 			fileTmpHtmlPath = new File(page.getTmpFilePath());
-			document = Jsoup.parse(fileTmpHtmlPath, this.conf.getCharset());
+			document = Jsoup.parse(fileTmpHtmlPath, this.websiteConfig.getCharset());
 			elementsImg = document.select(SELECTOR_IMG);
 			for (Element elementImg : elementsImg) {
 				imageLinks.add(WebUtils.getCompleteUrlLink(builder, elementImg.attr("src"), this.baseUrl, page.getCurrUrlLink()));
@@ -233,7 +241,7 @@ public class NineSixxxNetParser implements Parser {
 	 * */
 	private void antiProhibitForPic(Random random) {
 		try {
-			long lInterval = random.nextInt(conf.getLoadPicIntervalOffset()) + conf.getLoadPicIntervalBase();
+			long lInterval = random.nextInt(websiteConfig.getLoadPicIntervalOffset()) + websiteConfig.getLoadPicIntervalBase();
 			logger.debug("The current thread will sleep {} milliseconds.", lInterval);
 			Thread.sleep(lInterval);
 		} 
@@ -248,8 +256,8 @@ public class NineSixxxNetParser implements Parser {
 	}
 
 	@Override
-	public void setGalleryWebsiteConf(GalleryWebsite conf) {
-		this.conf = conf;
+	public void setGalleryWebsiteConfig(GalleryWebsiteConfig config) {
+		this.config = config;
 	}
 
 	@Override

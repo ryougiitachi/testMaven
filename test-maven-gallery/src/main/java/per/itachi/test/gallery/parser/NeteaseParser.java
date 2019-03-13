@@ -14,6 +14,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import per.itachi.test.gallery.conf.GalleryWebsite;
+import per.itachi.test.gallery.conf.GalleryWebsiteConfig;
 import per.itachi.test.gallery.util.GalleryUtils;
 import per.itachi.test.gallery.util.WebUtils;
 
@@ -68,7 +69,7 @@ public class NeteaseParser implements Parser {
 	}
 
 	@Override
-	public void setGalleryWebsiteConf(GalleryWebsite conf) {
+	public void setGalleryWebsiteConfig(GalleryWebsiteConfig config) {
 	}
 
 	@Override

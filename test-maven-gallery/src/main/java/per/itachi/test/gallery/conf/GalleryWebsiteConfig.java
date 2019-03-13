@@ -4,8 +4,10 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -17,15 +19,17 @@ import org.xml.sax.SAXException;
 
 import per.itachi.test.gallery.util.WebUtils;
 
-public class GalleryWebsiteConf {
+public class GalleryWebsiteConfig {
 	
-	private static final Logger logger = LoggerFactory.getLogger(GalleryWebsiteConf.class);
+	private static final Logger logger = LoggerFactory.getLogger(GalleryWebsiteConfig.class);
+	
+	private List<HttpHeader> globalHttpHeaders;
 	
 	private Map<String, Class<?>> mapUrlToClass;
 	
 	private Map<String, GalleryWebsite> mapUrlToWebsite;
 	
-	public static GalleryWebsiteConf load(String path) {
+	public static GalleryWebsiteConfig load(String path) {
 		File file = new File(path);
 		if (!file.exists()) {
 			logger.error("The configuration file {} doesn't exist.", path);
@@ -34,6 +38,11 @@ public class GalleryWebsiteConf {
 		Digester digester = new Digester();
 		digester.setValidating(false);
 		digester.addObjectCreate("websites", GalleryWebsites.class);
+		digester.addObjectCreate("websites/global-http-headers/header", HttpHeader.class);
+		digester.addSetProperties("websites/global-http-headers/header");
+//		digester.addBeanPropertySetter("websites/global-http-headers/header/name", "name");
+		digester.addBeanPropertySetter("websites/global-http-headers/header", "value");
+		digester.addSetNext("websites/global-http-headers/header", "addGlobalHttpHeader");
 		digester.addObjectCreate("websites/website", GalleryWebsite.class);
 		digester.addBeanPropertySetter("websites/website/id", "id");
 		digester.addBeanPropertySetter("websites/website/name", "name");
@@ -61,9 +70,17 @@ public class GalleryWebsiteConf {
 			return null;
 		}
 		
+		GalleryWebsiteConfig config = new GalleryWebsiteConfig();
+		// websites/global-http-headers 
+		HttpHeader httpHeader = null;
+		Iterator<HttpHeader> iteratorHttpHeader = websites.iterateGlobalHttpHeader();
+		while (iteratorHttpHeader.hasNext()) {
+			httpHeader = iteratorHttpHeader.next();
+			config.globalHttpHeaders.add(httpHeader);
+		}
+		// websites/website 
 		GalleryWebsite website = null;
 		Class<?> clazzParser = null;
-		GalleryWebsiteConf conf = new GalleryWebsiteConf();
 		Iterator<GalleryWebsite> iteratorWebsite = websites.iterateGalleryWebsite();
 		Iterator<String> iteratorDomain = null;
 		String strDomain = null;
@@ -79,11 +96,11 @@ public class GalleryWebsiteConf {
 					matcherBaseUrl = patternBaseUrl.matcher(strDomain);
 					if (matcherBaseUrl.matches()) {
 						strDomain = matcherBaseUrl.group(1);
-						if (conf.mapUrlToClass.get(strDomain) == null) {
-							conf.mapUrlToClass.put(strDomain, clazzParser);
+						if (config.mapUrlToClass.get(strDomain) == null) {
+							config.mapUrlToClass.put(strDomain, clazzParser);
 						}//conf.mapUrlToClass.get(strDomain) == null
-						if (conf.mapUrlToWebsite.get(strDomain) == null) {
-							conf.mapUrlToWebsite.put(strDomain, website);
+						if (config.mapUrlToWebsite.get(strDomain) == null) {
+							config.mapUrlToWebsite.put(strDomain, website);
 						}
 					}//matcherBaseUrl.matches()
 				}//iteratorDomain.hasNext()
@@ -92,12 +109,17 @@ public class GalleryWebsiteConf {
 		catch (ClassNotFoundException e) {
 			logger.error("Error occurs when initialising configurations about webistes.", e);
 		}
-		return conf;
+		return config;
 	}
 	
-	private GalleryWebsiteConf() {
+	private GalleryWebsiteConfig() {
+		globalHttpHeaders = new ArrayList<>();
 		mapUrlToClass = new HashMap<>();
 		mapUrlToWebsite = new HashMap<>();
+	}
+	
+	public List<HttpHeader> getGlobalHttpHeaders() {
+		return globalHttpHeaders;
 	}
 	
 	public Class<?> getPraserClass(String domain) {
@@ -113,9 +135,12 @@ public class GalleryWebsiteConf {
 			logger.info("No conf found.");
 			return;
 		}
-		GalleryWebsiteConf conf = load(args[0]);
-		if (conf == null) {
+		GalleryWebsiteConfig config = load(args[0]);
+		if (config == null) {
+			logger.error("error");
+		}
+		else {
+			logger.info("Global HTTP Header is {}. ", config.globalHttpHeaders);
 		}
 	}
-
 }

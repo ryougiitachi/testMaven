@@ -27,6 +27,7 @@ import org.slf4j.LoggerFactory;
 
 import per.itachi.test.gallery.GalleryConstants;
 import per.itachi.test.gallery.conf.GalleryWebsite;
+import per.itachi.test.gallery.conf.GalleryWebsiteConfig;
 import per.itachi.test.gallery.entity.SisZZOThreadPage;
 import per.itachi.test.gallery.entity.SisZZOTorrentPage;
 import per.itachi.test.gallery.entity.WebsiteAddress;
@@ -94,7 +95,9 @@ public class SisZZOParser implements Parser {
 	
 	private String baseUrl;
 	
-	private GalleryWebsite conf;
+	private GalleryWebsiteConfig config;
+	
+	private GalleryWebsite websiteConfig;
 	
 	private Random random;
 	
@@ -121,7 +124,8 @@ public class SisZZOParser implements Parser {
 
 	@Override
 	public void execute() {
-		logger.info("Start parsing {} URL {}", this.conf.getName(), this.urlLink);
+		this.websiteConfig = this.config.getWebsite(this.baseUrl);
+		logger.info("Start parsing {} URL {}", this.websiteConfig.getName(), this.urlLink);
 		List<SisZZOThreadPage> listThreadHtml = new ArrayList<>(1000);
 		List<SisZZOTorrentPage> listThreadTorrent = new ArrayList<>(1000);
 		loadTitleListHtml(listThreadHtml);//load title pages and thread url
@@ -146,7 +150,7 @@ public class SisZZOParser implements Parser {
 				logger.info("loadTitleListHtml: downloading and parsing the {}th list page. ", countPage + 1);
 				String strHtmlFileName = joinFileNameForTitleList(strNextPageUrlLink, countPage + 1 , retryTime);
 				String strTitleListHtmlPath = GalleryUtils.loadHtmlByURL(strNextPageUrlLink, mapHeaders, strHtmlFileName);
-				Document document = Jsoup.parse(new File(strTitleListHtmlPath), this.conf.getCharset());
+				Document document = Jsoup.parse(new File(strTitleListHtmlPath), this.websiteConfig.getCharset());
 				//check whether or not page is valid. 
 				if (isValidHtmlPage(document) && isValidTitleListPage(document)) {
 					retryTime = 0;
@@ -206,7 +210,7 @@ public class SisZZOParser implements Parser {
 		String strUrlPathName = GalleryUtils.getUrlLastPathWithoutSuffix(url);
 		String strFid = mapParams.get("fid");
 		String strTypeId = mapParams.get("typeid");
-		return String.format("%s-%s-fid%s-type%s-%05d-r%03d.html", this.conf.getName(), strUrlPathName, strFid, strTypeId, pageNbr, retryTime);
+		return String.format("%s-%s-fid%s-type%s-%05d-r%03d.html", this.websiteConfig.getName(), strUrlPathName, strFid, strTypeId, pageNbr, retryTime);
 	}
 	
 	/**
@@ -239,7 +243,7 @@ public class SisZZOParser implements Parser {
 				String strThreadHtmlPath = GalleryUtils.loadHtmlByURL(page.getUrlLink(), mapHeaders, strHtmlFileName);
 				page.setHtmlFilePath(strThreadHtmlPath);
 				try {
-					Document document = Jsoup.parse(new File(strThreadHtmlPath), this.conf.getCharset());
+					Document document = Jsoup.parse(new File(strThreadHtmlPath), this.websiteConfig.getCharset());
 					//check whether or not page is valid. 
 					if (isValidHtmlPage(document) && isValidThreadPage(document)) {
 						retryTime = 0;
@@ -273,11 +277,11 @@ public class SisZZOParser implements Parser {
 	private String joinFileNameForThread(SisZZOThreadPage page, int retryTime) {
 		String strBasePath = GalleryUtils.getUrlLastPathWithoutSuffix(page.getUrlLink());
 		Map<String, String> mapParams = GalleryUtils.getUrlQueryParam(page.getUrlLink());
-		return String.format("%s-%s-tid%s-%03d.html", this.conf.getName(), strBasePath, mapParams.get("tid"), retryTime);
+		return String.format("%s-%s-tid%s-%03d.html", this.websiteConfig.getName(), strBasePath, mapParams.get("tid"), retryTime);
 	}
 	
 	private Path createMainDirectory() throws IOException {
-		Path dirWebsite = Paths.get(DIR_ROOT, this.conf.getMainDirectoryName());
+		Path dirWebsite = Paths.get(DIR_ROOT, this.websiteConfig.getMainDirectoryName());
 		if (Files.exists(dirWebsite)) {
 			return dirWebsite;
 		}
@@ -432,7 +436,7 @@ public class SisZZOParser implements Parser {
 			String strHtmlFilePath = GalleryUtils.loadHtmlByURL(page.getReferPageLink(), mapHeaders, strHtmlFileName);
 			File fileHtml = new File(strHtmlFilePath);
 			try {
-				Document document = Jsoup.parse(fileHtml, this.conf.getCharset());
+				Document document = Jsoup.parse(fileHtml, this.websiteConfig.getCharset());
 				//check whether or not page is valid. 
 				if (isValidHtmlPage(document) && isValidAttachmentPage(document)) {
 					retryTime = 0;
@@ -463,7 +467,7 @@ public class SisZZOParser implements Parser {
 	private String joinFileNameForAttachment(SisZZOTorrentPage page, int retryTime) {
 		String strBasePath = GalleryUtils.getUrlLastPathWithoutSuffix(page.getReferPageLink());
 		Map<String, String> mapParams = GalleryUtils.getUrlQueryParam(page.getReferPageLink());
-		return String.format("%s-%s-aid%s-%03d.html", this.conf.getName(), strBasePath, mapParams.get("aid"), retryTime);
+		return String.format("%s-%s-aid%s-%03d.html", this.websiteConfig.getName(), strBasePath, mapParams.get("aid"), retryTime);
 	}
 	
 	/**
@@ -510,11 +514,11 @@ public class SisZZOParser implements Parser {
 	 * avoid website forbidding to parsing. 
 	 * */
 	private void antiProhibitForHtml() {
-		if (conf.getLoadHtmlIntervalBase() <= 0 || conf.getLoadHtmlIntervalOffset() <= 0) {
+		if (websiteConfig.getLoadHtmlIntervalBase() <= 0 || websiteConfig.getLoadHtmlIntervalOffset() <= 0) {
 			return;
 		}
 		try {
-			long lInterval = conf.getLoadHtmlIntervalBase() + random.nextInt(conf.getLoadHtmlIntervalOffset()); 
+			long lInterval = websiteConfig.getLoadHtmlIntervalBase() + random.nextInt(websiteConfig.getLoadHtmlIntervalOffset()); 
 			logger.debug("The current thread will sleep {} milliseconds.", lInterval);
 			Thread.sleep(lInterval);
 		} 
@@ -527,11 +531,11 @@ public class SisZZOParser implements Parser {
 	 * avoid website forbidding to parsing. 
 	 * */
 	private void antiProhibitForPic() {
-		if (conf.getLoadPicIntervalBase() <= 0 || conf.getLoadPicIntervalOffset() <= 0) {
+		if (websiteConfig.getLoadPicIntervalBase() <= 0 || websiteConfig.getLoadPicIntervalOffset() <= 0) {
 			return;
 		}
 		try {
-			long lInterval = conf.getLoadPicIntervalBase() + random.nextInt(conf.getLoadPicIntervalOffset());//350 + 300 
+			long lInterval = websiteConfig.getLoadPicIntervalBase() + random.nextInt(websiteConfig.getLoadPicIntervalOffset());//350 + 300 
 			logger.debug("The current thread will sleep {} milliseconds.", lInterval);
 			Thread.sleep(lInterval);
 		} 
@@ -546,8 +550,8 @@ public class SisZZOParser implements Parser {
 	}
 
 	@Override
-	public void setGalleryWebsiteConf(GalleryWebsite conf) {
-		this.conf = conf;
+	public void setGalleryWebsiteConfig(GalleryWebsiteConfig config) {
+		this.config = config;
 	}
 
 	@Override

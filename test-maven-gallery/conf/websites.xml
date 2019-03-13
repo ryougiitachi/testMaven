@@ -1,5 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <websites>
+	<basic-info>
+		<html-path></html-path>
+	</basic-info>
+	<global-http-headers>
+		<header name="a">b</header>
+	</global-http-headers>
 	<website>
 		<id></id>
 		<name></name>

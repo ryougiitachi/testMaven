@@ -8,7 +8,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import per.itachi.test.gallery.conf.GalleryWebsite;
-import per.itachi.test.gallery.conf.GalleryWebsiteConf;
+import per.itachi.test.gallery.conf.GalleryWebsiteConfig;
 import per.itachi.test.gallery.entity.GalleryHistory;
 import per.itachi.test.gallery.parser.Parser;
 import per.itachi.test.gallery.persist.DBAccessConnUtils;
@@ -19,7 +19,7 @@ public class Entry {
 	
 	private static final Logger logger = LoggerFactory.getLogger(Entry.class);
 	
-	private static GalleryWebsiteConf confGalleryWebsite;
+	private static GalleryWebsiteConfig confGalleryWebsite;
 
 	public static void main(String[] args) {
 		if (args.length <= 0) {
@@ -105,7 +105,7 @@ public class Entry {
 	}
 	
 	private static void initialise() {
-		confGalleryWebsite = GalleryWebsiteConf.load(GalleryConstants.DEFAULT_WEBSITE_CONF_PATH);
+		confGalleryWebsite = GalleryWebsiteConfig.load(GalleryConstants.DEFAULT_WEBSITE_CONF_PATH);
 	}
 
 	private static Parser instantiateNewParser(Class<?> clazzParser, String link) 
