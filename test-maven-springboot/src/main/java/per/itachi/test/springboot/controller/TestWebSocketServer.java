@@ -51,6 +51,9 @@ public class TestWebSocketServer {
 		removeSession(session);
 	}
 	
+	/**
+	 * 不知为什么ie的在连接之后会一直发信息；
+	 * */
 	@OnMessage
 	public void onMessage(Session session, PongMessage message) {
 		ByteBuffer buffer = message.getApplicationData();
