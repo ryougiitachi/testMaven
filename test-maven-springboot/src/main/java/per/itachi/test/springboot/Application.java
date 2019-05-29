@@ -9,6 +9,9 @@ import org.springframework.web.socket.server.standard.ServerEndpointExporter;
 
 import per.itachi.test.springboot.bean.TestSpringLifeCycleBean;
 
+/**
+ * 远程调试所用 -Xdebug -Xrunjdwp:transport=dt_socket,server=y,suspend=n,address=8098
+ * */
 @SpringBootApplication
 @ComponentScan({"per.itachi.test.springboot"})
 @PropertySource({"file:${APP_CONF_HOME}/config-springmvc.properties"})
@@ -19,6 +22,9 @@ public class Application {
 		return new TestSpringLifeCycleBean();
 	}
 	
+	/**
+	 * ServerEndpointExporter是SpringBoot启用websocket的关键；
+	 * */
 	@Bean
 	public ServerEndpointExporter serverEndpointExporter() {
 		return new ServerEndpointExporter();
