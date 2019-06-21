@@ -7,6 +7,7 @@ import javax.annotation.PostConstruct;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.amqp.core.AmqpAdmin;
 import org.springframework.amqp.core.AmqpTemplate;
 import org.springframework.amqp.core.Message;
 import org.springframework.amqp.core.MessageProperties;
@@ -38,6 +39,9 @@ public class RabbitmqConsumerListener {
 	@Autowired
 	private ConnectionFactory connectionFactory;
 	
+	@Autowired
+	private AmqpAdmin amqpAdmin;
+	
 	//若不明确指定该值是null
 	@Autowired(required=false)
 	private RabbitAdmin rabbitAdmin;
@@ -67,6 +71,7 @@ public class RabbitmqConsumerListener {
 	@PostConstruct
 	private void init() {
 		logger.info("ConnectionFactory: {}", connectionFactory);
+		logger.info("AmqpAdmin: {}", amqpAdmin);
 		logger.info("AmqpTemplate: {}", ampqTemplate);
 		logger.info("RabbitTemplate: {}", rabbitTemplate);
 	}
