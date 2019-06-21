@@ -4,3 +4,6 @@
 /.classpath
 /.tern-project
 /*.iml
+/data/
+/etc/
+/log/
