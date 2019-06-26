@@ -14,6 +14,7 @@ import org.springframework.beans.factory.BeanFactoryAware;
 import org.springframework.beans.factory.BeanNameAware;
 import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.InitializingBean;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.context.ApplicationEventPublisher;
@@ -32,6 +33,7 @@ import org.springframework.core.type.AnnotationMetadata;
 import org.springframework.instrument.classloading.LoadTimeWeaver;
 import org.springframework.jmx.export.notification.NotificationPublisher;
 import org.springframework.jmx.export.notification.NotificationPublisherAware;
+import org.springframework.stereotype.Component;
 import org.springframework.util.StringValueResolver;
 import org.springframework.web.context.ServletConfigAware;
 import org.springframework.web.context.ServletContextAware;
@@ -54,7 +56,7 @@ import org.springframework.web.context.ServletContextAware;
  * MessageSourceAware, ApplicationContextAware, ServletContextAware <br/>
  * 这种执行顺序与implements中的声明顺序无关；<br/>
  * */
-//@Component("TestSpringLifeCycleComponent.")
+@Component("TestSpringLifeCycleComponent.")
 public class TestSpringLifeCycleBean 
 		implements 
 				// 这是执行了的Aware
@@ -65,6 +67,12 @@ public class TestSpringLifeCycleBean
 				InitializingBean, DisposableBean {
 	
 	private final Logger logger = LoggerFactory.getLogger(TestSpringLifeCycleBean.class);
+	
+	@Value("${placeholder.property.test}")
+	private String placeholderPropertyTest;
+	
+	@Value("${placeholder.env.test}")
+	private String placeholderEnvTest;
 
 	@Override
 	public void setBeanName(String name) {
@@ -147,6 +155,8 @@ public class TestSpringLifeCycleBean
 	@Override
 	public void afterPropertiesSet() throws Exception {
 		logger.info("Execute afterPropertiesSet of InitializingBean in spring lifecycle. ");
+		logger.info("placeholderPropertyTest is {}, placeholderEnvTest is {}", placeholderPropertyTest, placeholderEnvTest);
+		logger.info("placeholderPropertyTest is {}, placeholderEnvTest is {}", placeholderPropertyTest, placeholderEnvTest);
 	}
 	
 	@Bean(initMethod="executeInitMethod")
