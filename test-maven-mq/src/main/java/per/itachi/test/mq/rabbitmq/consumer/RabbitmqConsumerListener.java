@@ -122,4 +122,17 @@ public class RabbitmqConsumerListener {
 			}
 		}
 	}
+	
+	@RabbitListener(bindings=@QueueBinding(
+			exchange=@Exchange(name="xchg.direct.test-spring.client-declare", type="direct"), 
+			value=@Queue(name="queue.test-spring.no-ack", durable="true"), 
+			key={"routing.test-spring.no-ack"}
+		))
+	public void listenNoAck(SimpleEntity entity, Channel channel, Message message) {
+		MessageProperties properties = message.getMessageProperties();
+		logger.info("Channel={}", channel);
+		logger.info("MessageProperties={}", properties);
+		//实验spring框架是否有对ack的自动回应；
+//		logger.info("{}", 1/0);//如果listener方法抛异常，Spring将自动返回Basic.Nack；
+	}
 }
