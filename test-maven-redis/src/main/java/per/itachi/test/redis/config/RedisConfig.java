@@ -29,7 +29,8 @@ public class RedisConfig {
 		RedisSerializer<String> redisKeySerializer = new StringRedisSerializer(Charset.forName("UTF-8"));
 		redisTemplate.setKeySerializer(redisKeySerializer);
 		redisTemplate.setHashKeySerializer(redisKeySerializer);
-//		redisTemplate.setValueSerializer(new FastJsonRedisSerializer<>(Serializable.class));
+		redisTemplate.setValueSerializer(new FastJsonRedisSerializer<>(Serializable.class));
+		redisTemplate.setEnableTransactionSupport(true);//Exception will throw when executing multi/exec if not set. 
 		return redisTemplate;
 	}
 	

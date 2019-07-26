@@ -1,6 +1,7 @@
 package per.itachi.test.redis.controller;
 
 import java.io.Serializable;
+import java.util.UUID;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -13,11 +14,14 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 import io.lettuce.core.RedisClient;
 import per.itachi.test.redis.entity.RedisRequestEntity;
 import per.itachi.test.redis.entity.RedisResponseEntity;
+import per.itachi.test.redis.lock.DistributedLock;
+import per.itachi.test.redis.lock.RedisDistributedLock;
 
 @Controller
 @RequestMapping("/")
@@ -82,6 +86,24 @@ public class RedisController {
 	@RequestMapping(path="/lettuce/info", method={RequestMethod.POST})
 	@ResponseBody
 	public RedisResponseEntity showLettuceInfo() {
+		RedisResponseEntity responseBody = null;
+		return responseBody;
+	}
+	
+	@RequestMapping(path="/lock", method={RequestMethod.GET})
+	@ResponseBody
+	public RedisResponseEntity testRedisLock() {
+		DistributedLock lock = new RedisDistributedLock(UUID.randomUUID().toString(), redisTemplate);
+		lock.lock(1000);
+		RedisResponseEntity responseBody = null;
+		return responseBody;
+	}
+	
+	@RequestMapping(path="/unlock", method={RequestMethod.GET})
+	@ResponseBody
+	public RedisResponseEntity testRedisUnlock(@RequestParam String lockID) {
+		DistributedLock lock = new RedisDistributedLock(lockID, redisTemplate);
+		lock.unlock();
 		RedisResponseEntity responseBody = null;
 		return responseBody;
 	}
