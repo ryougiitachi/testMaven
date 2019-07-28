@@ -26,17 +26,22 @@ public class UploadController {
 	}
 	
 	@RequestMapping(path="/upload-file")
-	public String upload(@RequestParam MultipartFile fileUpload, HttpServletRequest request) throws IOException {
-		logger.info("fileUpload is {}", fileUpload);
-		logger.info("fileUpload.getBytes()'s length is {}", fileUpload.getBytes().length);
-		logger.info("fileUpload.getContentType() is {}", fileUpload.getContentType());
-		logger.info("fileUpload.getInputStream() is {}", fileUpload.getInputStream());
-		logger.info("fileUpload.getName() is {}", fileUpload.getName());
-		logger.info("fileUpload.getOriginalFilename() is {}", fileUpload.getOriginalFilename());
-		logger.info("fileUpload.getResource() is {}", fileUpload.getResource());
-		logger.info("fileUpload.getSize() is {}", fileUpload.getSize());
-		logger.info("fileUpload.isEmpty() is {}", fileUpload.isEmpty());
-		logger.info("request content-type is {}", request.getContentType());
+	public String upload(@RequestParam MultipartFile fileUpload, HttpServletRequest request) {
+		try {
+			logger.info("fileUpload is {}", fileUpload);
+			logger.info("fileUpload.getBytes()'s length is {}", fileUpload.getBytes().length);
+			logger.info("fileUpload.getContentType() is {}", fileUpload.getContentType());
+			logger.info("fileUpload.getInputStream() is {}", fileUpload.getInputStream());
+			logger.info("fileUpload.getName() is {}", fileUpload.getName());
+			logger.info("fileUpload.getOriginalFilename() is {}", fileUpload.getOriginalFilename());
+			logger.info("fileUpload.getResource() is {}", fileUpload.getResource());
+			logger.info("fileUpload.getSize() is {}", fileUpload.getSize());
+			logger.info("fileUpload.isEmpty() is {}", fileUpload.isEmpty());
+			logger.info("request content-type is {}", request.getContentType());
+		} 
+		catch (IOException e) {
+			logger.info("", e);
+		}
 		return "success";
 	}
 }
