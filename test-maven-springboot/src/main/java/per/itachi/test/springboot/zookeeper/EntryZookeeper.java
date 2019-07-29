@@ -29,16 +29,6 @@ public class EntryZookeeper {
 		catch (IOException|InterruptedException e) {
 			logger.error("Error occurs when initialising zookeeper. ", e);
 		} 
-		finally {
-			if (zk != null) {
-				try {
-					zk.close();
-				} 
-				catch (InterruptedException e) {
-					logger.error("Error occurs when closing zookeeper. ", e);
-				}
-			}
-		}
 	}
 
 }

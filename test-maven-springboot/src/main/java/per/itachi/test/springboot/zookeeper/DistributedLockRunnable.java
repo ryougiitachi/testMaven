@@ -17,7 +17,7 @@ public class DistributedLockRunnable implements Runnable {
 	@Override
 	public void run() {
 		try {
-			Thread.sleep(10*1000);
+			Thread.sleep(20*1000);
 		} 
 		catch (InterruptedException e) {
 			logger.error("Error occurs when closing zookeeper. ", e);
