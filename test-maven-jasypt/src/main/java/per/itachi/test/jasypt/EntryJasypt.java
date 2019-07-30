@@ -11,7 +11,7 @@ public class EntryJasypt {
 		}
 		EnvironmentStringPBEConfig config = new EnvironmentStringPBEConfig();
 		config.setAlgorithm("PBEWithMD5AndDES");
-		config.setPassword("homecredit-ip");
+		config.setPassword("itachi");
 		StandardPBEStringEncryptor encryptor = new StandardPBEStringEncryptor();
 		encryptor.setConfig(config);
 		String strDecryption = encryptor.decrypt(args[0]);
