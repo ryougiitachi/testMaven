@@ -89,6 +89,18 @@
 			<groupId>org.apache.zookeeper</groupId>
 			<artifactId>zookeeper</artifactId>
 		</dependency>
+		<dependency>
+			<groupId>org.apache.curator</groupId>
+			<artifactId>curator-framework</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.curator</groupId>
+			<artifactId>curator-client</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.curator</groupId>
+			<artifactId>curator-recipes</artifactId>
+		</dependency>
 	</dependencies>
 
 	<build>
@@ -97,7 +109,7 @@
 				<groupId>org.springframework.boot</groupId>
 				<artifactId>spring-boot-maven-plugin</artifactId>
 				<configuration>
-					<mainClass>cn.homecredit.dd.icbc.IcbcDDAuthApiApplication</mainClass>
+					<mainClass>per.itachi.test.springboot.Application</mainClass>
 					<layout>ZIP</layout>
 				</configuration>
 				<executions>
