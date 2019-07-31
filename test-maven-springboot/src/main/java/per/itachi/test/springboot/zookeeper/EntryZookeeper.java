@@ -7,10 +7,13 @@ import java.util.concurrent.CountDownLatch;
 import org.apache.zookeeper.KeeperException;
 import org.apache.zookeeper.Watcher;
 import org.apache.zookeeper.ZooKeeper;
+import org.apache.zookeeper.data.ACL;
 import org.apache.zookeeper.data.Stat;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import per.itachi.test.springboot.lock.DistributedLock;
+import per.itachi.test.springboot.lock.ZookeeperDistributedLock;
 import per.itachi.test.springboot.zookeeper.watcher.DistributedLockWatcher;
 
 public class EntryZookeeper {
@@ -23,7 +26,7 @@ public class EntryZookeeper {
 		try {
 			logger.info("Initialising zookeeper client... ");
 			Watcher watcher = new DistributedLockWatcher(latch);
-			zk = new ZooKeeper("127.0.0.1:2181", 10 * 1000, watcher);
+			zk = new ZooKeeper("127.0.0.1:2181", 10 * 1000, watcher);// this watcher is required, otherwise NullPointerException will be thrown. 
 //			zk.register(watcher);
 			latch.await();
 			logger.info("Finish!");
@@ -33,11 +36,14 @@ public class EntryZookeeper {
 			}
 			else {
 				logger.info("The znode {} is {}. ", "/fate", stat);
+				logger.info("The znode's ACL {} is {}. ", "/fate", zk.getACL("/fate", stat));
 			}
 			//to test a variety of zookeeper methods. 
 			List<String> listZnode = zk.getChildren("/", false);
-			logger.info("The znode under {} contains {}. ", "/", listZnode);
-			Thread.sleep(20 * 1000);
+			showACL(zk.getACL("/fate", stat), "/fate");
+			testDistributedLock(zk);
+			
+			Thread.sleep(10 * 1000);
 		} 
 		catch (IOException | InterruptedException e) {
 			logger.error("Error occurs when initialising zookeeper. ", e);
@@ -54,5 +60,21 @@ public class EntryZookeeper {
 			}
 		}
 	}
-
+	
+	private static void showACL(List<ACL> acls, String path) {
+		for (ACL acl : acls) {
+			logger.info("The znode under {} contains {}/{}/{}/{}. ", path, acl, acl.getId().getId(), acl.getId().getScheme(), acl.getPerms());
+		}
+	}
+	
+	private static void testDistributedLock(ZooKeeper zk) throws InterruptedException {
+		DistributedLock lock = new ZookeeperDistributedLock(zk, "user");
+		lock.lock();
+		try {
+			Thread.sleep(10 * 1000);
+		} 
+		finally {
+			lock.unlock();
+		}
+	}
 }
