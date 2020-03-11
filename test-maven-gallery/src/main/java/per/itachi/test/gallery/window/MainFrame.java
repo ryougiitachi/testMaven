@@ -3,8 +3,6 @@ package per.itachi.test.gallery.window;
 import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.awt.EventQueue;
-import java.awt.GraphicsConfiguration;
-import java.awt.HeadlessException;
 import java.awt.Point;
 import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
@@ -13,6 +11,7 @@ import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
 import java.util.EventObject;
 
+import javax.annotation.PostConstruct;
 import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JMenu;
@@ -27,10 +26,14 @@ import javax.swing.table.DefaultTableModel;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
+import per.itachi.test.gallery.GalleryItemConstants;
+import per.itachi.test.gallery.component.FrameOperationAdapter;
 import per.itachi.test.gallery.entity.FrameGalleryItemEntity;
-import per.itachi.test.gallery.entity.FrameOperationEntity;
 
+@Component
 public class MainFrame extends JFrame implements ActionListener, WindowListener, GalleryParserListener {
 	
 	/**
@@ -39,6 +42,9 @@ public class MainFrame extends JFrame implements ActionListener, WindowListener,
 	private static final long serialVersionUID = -8062964715207008969L;
 
 	private final Logger logger = LoggerFactory.getLogger(MainFrame.class);
+	
+	@Autowired
+	private FrameOperationAdapter operations;
 
 	private JMenuBar menuBar;
 	
@@ -50,34 +56,7 @@ public class MainFrame extends JFrame implements ActionListener, WindowListener,
 	
 	private DefaultTableModel tableModelUrlLink;
 	
-	private FrameOperationEntity operations;
-	
-	public MainFrame() {
-		super();
-		initWindow();
-	}
-	
-	public MainFrame(FrameOperationEntity operations) {
-		super();
-		this.operations = operations;
-		initWindow();
-	}
-	
-	public MainFrame(GraphicsConfiguration gc) {
-		super(gc);
-		initWindow();
-	}
-
-	public MainFrame(String title, GraphicsConfiguration gc) {
-		super(title, gc);
-		initWindow();
-	}
-
-	public MainFrame(String title) throws HeadlessException {
-		super(title);
-		initWindow();
-	}
-
+	@PostConstruct
 	private void initWindow() {
 		initWindowLayout();
 		initWindowMenu();
@@ -141,6 +120,8 @@ public class MainFrame extends JFrame implements ActionListener, WindowListener,
 		btnSubmit.addActionListener(this);
 		// window 
 		this.addWindowListener(this);
+		//GalleryParserListener updates status of each item. 
+		operations.setGalleryParserListener(this);
 	}
 	
 	private void exit() {
@@ -295,7 +276,7 @@ public class MainFrame extends JFrame implements ActionListener, WindowListener,
 							FrameGalleryItemEntity entity = new FrameGalleryItemEntity();
 							entity.setSeqID(++iRowCount);
 							entity.setUrlLink(strUrlLink.trim());
-							entity.setStatus("Added");
+							entity.setStatus(GalleryItemConstants.STATUS_NAME_ADDED);
 							operations.putUrlLink(entity);
 							tableModelUrlLink.addRow(new Object[]{entity.getSeqID(), entity.getUrlLink(), entity.getStatus()});
 							txtFldUrlLink.setText(StringUtils.EMPTY);

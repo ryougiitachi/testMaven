@@ -9,6 +9,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import per.itachi.test.gallery.GalleryConstants;
+import per.itachi.test.gallery.GalleryItemConstants;
 import per.itachi.test.gallery.conf.GalleryWebsite;
 import per.itachi.test.gallery.conf.GalleryWebsiteConfig;
 import per.itachi.test.gallery.entity.FrameGalleryItemEntity;
@@ -45,12 +46,12 @@ public class GalleryParserRunnable implements ControllableRunnable {
 				entity = links.take();
 				strUrlLink = entity.getUrlLink();
 				logger.info("Start parsing {}. ", strUrlLink);
-				entity.setStatus("Processing...");
+				entity.setStatus(GalleryItemConstants.STATUS_NAME_PROCESSING);
 				states.put(entity);
 				String strBaseUrl = WebUtils.getBaseUrl(strUrlLink);
 				if (strBaseUrl == null) {
 					logger.error("{} is not a valid website link.", strUrlLink);
-					entity.setStatus("Invalid");
+					entity.setStatus(GalleryItemConstants.STATUS_NAME_INVALID);
 					states.put(entity);
 					continue;
 				}
@@ -58,7 +59,7 @@ public class GalleryParserRunnable implements ControllableRunnable {
 				GalleryWebsite website = confGalleryWebsite.getWebsite(strBaseUrl);
 				if (clazzParser == null || website == null) {
 					logger.error("{} has been not included in gallery.", strUrlLink);
-					entity.setStatus("Non-included");
+					entity.setStatus(GalleryItemConstants.STATUS_NAME_NON_INCLUDED);
 					states.put(entity);
 					continue;
 				}
@@ -91,7 +92,7 @@ public class GalleryParserRunnable implements ControllableRunnable {
 					DBAccessConnUtils.close();
 				}
 				if (exit) {
-					entity.setStatus("Downloaded");
+					entity.setStatus(GalleryItemConstants.STATUS_NAME_DOWNLOADED);
 					states.put(entity);
 					continue;
 				}
@@ -113,7 +114,7 @@ public class GalleryParserRunnable implements ControllableRunnable {
 					exit = true;
 				}
 				if (exit) {
-					entity.setStatus("Error");
+					entity.setStatus(GalleryItemConstants.STATUS_NAME_ERROR);
 					states.put(entity);
 					continue;
 				}

@@ -17,6 +17,10 @@ public class GalleryItemStateRunnable implements ControllableRunnable {
 	
 	private BlockingQueue<FrameGalleryItemEntity> states;
 	
+	public GalleryItemStateRunnable(BlockingQueue<FrameGalleryItemEntity> states) {
+		this.states = states;
+	}
+	
 	public GalleryItemStateRunnable(GalleryParserListener listener, BlockingQueue<FrameGalleryItemEntity> states) {
 		this.listener = listener;
 		this.states = states;
@@ -51,4 +55,11 @@ public class GalleryItemStateRunnable implements ControllableRunnable {
 		Thread.currentThread().interrupt();
 	}
 
+	public GalleryParserListener getListener() {
+		return listener;
+	}
+
+	public void setListener(GalleryParserListener listener) {
+		this.listener = listener;
+	}
 }

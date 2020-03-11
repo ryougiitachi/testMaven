@@ -1,12 +1,5 @@
 package per.itachi.test.gallery;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.LinkedBlockingQueue;
-
 import javax.swing.JFrame;
 import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
@@ -14,13 +7,9 @@ import javax.swing.WindowConstants;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.support.FileSystemXmlApplicationContext;
 
-import per.itachi.test.gallery.entity.FrameGalleryItemEntity;
-import per.itachi.test.gallery.entity.FrameOperationEntity;
-import per.itachi.test.gallery.thread.ControllableRunnable;
-import per.itachi.test.gallery.thread.GalleryItemStateRunnable;
-import per.itachi.test.gallery.thread.GalleryParserRunnable;
-import per.itachi.test.gallery.window.GalleryParserListener;
 import per.itachi.test.gallery.window.MainFrame;
 
 public class MainFrameEntry {
@@ -31,6 +20,33 @@ public class MainFrameEntry {
 
 	public static void main(String[] args) {
 		logger.info("Starting {}", MAIN_TITLE);
+
+		logger.info("Initialising UI look-and-feel... ");
+		initialiseUILookAndFeel();
+		logger.info("UI look-and-feel is ready. ");
+		
+		logger.info("Initialising Spring Framework... ");
+		ApplicationContext applicationContext = new FileSystemXmlApplicationContext("conf/application-context*.xml");
+		logger.info("Spring Framework is ready. ");
+		
+		logger.info("Initialising Main Frame... ");
+		JFrame mainFrame = applicationContext.getBean(MainFrame.class);
+		logger.info("Main Frame is ready. ");
+		
+		logger.info("Showing main frame... ");
+		mainFrame.setVisible(true);
+		mainFrame.setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
+		mainFrame.setTitle(MAIN_TITLE);
+		
+		logger.info("Started {}", MAIN_TITLE);
+	}
+	
+	/**
+	 * UI look-and-feel is required to execute before initialising frame. 
+	 * Otherwise, UI look-and-feel won't work. 
+	 * 
+	 * */
+	private static void initialiseUILookAndFeel() {
 		try {
 			UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
 		} 
@@ -45,34 +61,6 @@ public class MainFrameEntry {
 		} 
 		catch (UnsupportedLookAndFeelException e) {
 			logger.error("Error occured when initialising main frame. ", e);
-		}
-		
-		logger.info("Initialising blocking queue... ");
-		BlockingQueue<FrameGalleryItemEntity> queueUrlLink = new LinkedBlockingQueue<>();
-		BlockingQueue<FrameGalleryItemEntity> queueStateChanged = new LinkedBlockingQueue<>();
-		FrameOperationEntity entity = new FrameOperationEntity();
-		
-		logger.info("Initialising main frame... ");
-		JFrame mainFrame = new MainFrame(entity);
-		
-		logger.info("Initialising relevant threads... ");
-		ControllableRunnable runnableParser = new GalleryParserRunnable(queueUrlLink, queueStateChanged);
-		ControllableRunnable runnableState = new GalleryItemStateRunnable((GalleryParserListener)mainFrame, queueStateChanged);
-		ExecutorService executorService = Executors.newFixedThreadPool(2);
-		executorService.execute(runnableParser);
-		executorService.execute(runnableState);
-		List<ControllableRunnable> listRunnables = new ArrayList<>();
-		listRunnables.add(runnableParser);
-		listRunnables.add(runnableState);
-		entity.setLinks(queueUrlLink);
-		entity.setControllableRunnable(listRunnables);
-		entity.setExecutorService(executorService);
-		
-		logger.info("Showing main frame... ");
-		mainFrame.setVisible(true);
-		mainFrame.setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
-		mainFrame.setTitle(MAIN_TITLE);
-		
-		logger.info("Started {}", MAIN_TITLE);
+		}		
 	}
 }
