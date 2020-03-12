@@ -72,7 +72,7 @@ public class NineSixxxNetParser implements Parser {
 		String strUrlLink = this.urlLink;
 		logger.info("Start parsing NineSixxxNet URL {}", strUrlLink);
 		Map<String, String> mapHeaders = GalleryUtils.getDefaultRequestHeaders();
-		String strTmpHtmlPath = GalleryUtils.loadHtmlByURL(strUrlLink, mapHeaders);
+		String strTmpHtmlPath = GalleryUtils.loadHtmlByURL(strUrlLink, mapHeaders);//TODO: reconstruction
 		List<NineSixxxNetPage> listTmpHtmlPath = new ArrayList<>();
 		List<String> listImageLink = new ArrayList<>();
 		String strPicDirPath = null;
@@ -84,7 +84,7 @@ public class NineSixxxNetParser implements Parser {
 			listTmpHtmlPath.add(page);
 			strPicDirPath = generatePicDirectory(strTmpHtmlPath);
 			if (strPicDirPath != null) {
-				loadTmpHtmlList(strTmpHtmlPath, listTmpHtmlPath, mapHeaders);// download html
+				loadTmpHtmlList(strTmpHtmlPath, listTmpHtmlPath, mapHeaders);// download html TODO: reconstruction
 				loadImageLinkList(listTmpHtmlPath, listImageLink);// load image links
 				downloadImages(listImageLink, mapHeaders, strPicDirPath);//download imagaes
 			}
@@ -164,12 +164,13 @@ public class NineSixxxNetParser implements Parser {
 		Random random = new Random(System.currentTimeMillis());
 		//It is hardly smooth to loop, think do-while block.  
 		File fileTmpHtmlPath = new File(strTmpFilePath);
-		Document document = Jsoup.parse(fileTmpHtmlPath, this.websiteConfig.getCharset());//GBK
+		Document document;//GBK
+		document = Jsoup.parse(fileTmpHtmlPath, this.websiteConfig.getCharset());//GBK
 		for(elementsNextPage = document.select(SELECTOR_NEXT_PAGE); 
 				elementsNextPage.size() > 0;
 				elementsNextPage = document.select(SELECTOR_NEXT_PAGE)) {
 			elementNextPage = elementsNextPage.first();
-			strNextLink = WebUtils.getCompleteUrlLink(builder, elementNextPage.attr("href"), this.baseUrl, strCurrUrl);
+			strNextLink = WebUtils.getCompleteUrlLink(builder, elementNextPage.attr(GalleryConstants.HTML_ATTR_A_HREF), this.baseUrl, strCurrUrl);
 			strTmpFilePath = GalleryUtils.loadHtmlByURL(strNextLink, headers);
 			fileTmpHtmlPath = new File(strTmpFilePath);
 			logger.info("Downloaded html file {}", fileTmpHtmlPath.getName());

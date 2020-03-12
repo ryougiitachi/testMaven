@@ -7,7 +7,11 @@
 				http://www.springframework.org/schema/beans/spring-beans.xsd
 				http://www.springframework.org/schema/context
 				http://www.springframework.org/schema/context/spring-context.xsd">
-		
+	
+	<bean id="addedItems" class="java.util.concurrent.LinkedBlockingQueue"></bean>
+	
+	<bean id="updatedItems" class="java.util.concurrent.LinkedBlockingQueue"></bean>
+
 	<context:component-scan use-default-filters="false" 
 			base-package="per.itachi.test.gallery.component,per.itachi.test.gallery.window">
 		<context:include-filter type="annotation" expression="org.springframework.stereotype.Component" />
