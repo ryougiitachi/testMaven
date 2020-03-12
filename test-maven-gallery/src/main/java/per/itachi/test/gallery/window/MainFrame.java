@@ -35,11 +35,11 @@ import per.itachi.test.gallery.entity.FrameGalleryItemEntity;
 
 @Component
 public class MainFrame extends JFrame implements ActionListener, WindowListener, GalleryParserListener {
-	
+
 	/**
-	 * 
+	 * generated on 2020-03-12
 	 */
-	private static final long serialVersionUID = -8062964715207008969L;
+	private static final long serialVersionUID = 3173287040068375177L;
 
 	private final Logger logger = LoggerFactory.getLogger(MainFrame.class);
 	
@@ -115,16 +115,19 @@ public class MainFrame extends JFrame implements ActionListener, WindowListener,
 	
 	private void initWindowListener() {
 		// menu items 
-		menuItemExit.addActionListener(this);
+		menuItemExit.addActionListener(this);//circular reference
 		// buttons 
 		btnSubmit.addActionListener(this);
 		// window 
 		this.addWindowListener(this);
 		//GalleryParserListener updates status of each item. 
-		operations.setGalleryParserListener(this);
+//		operations.setGalleryParserListener(this);
+		Thread threadGalleryItem = new Thread(new GalleryParserListenerRunnable(this.operations));
+		threadGalleryItem.start();
 	}
 	
 	private void exit() {
+		dispose();//necessary ? 
 		logger.info("Shutting down controllable threads... ");
 		operations.shutdownControllableRunnable();
 		logger.info("Shutting down gallery executor service... ");
@@ -190,6 +193,29 @@ public class MainFrame extends JFrame implements ActionListener, WindowListener,
 		Runnable runnable = new EventQueueRunnable(EventQueueRunnable.EVENT_ID_ITEM_STATE_CHANGED, event);
 		EventQueue.invokeLater(runnable);
 	}
+	
+	private class GalleryParserListenerRunnable implements Runnable {
+		
+		private FrameOperationAdapter adapter;
+		
+		public GalleryParserListenerRunnable(FrameOperationAdapter adapter) {
+			this.adapter = adapter;
+		}
+		
+		@Override
+		public void run() {
+			FrameGalleryItemEntity entity = null;
+			try {
+				do {
+					entity = adapter.getUpdatedItem();
+					MainFrame.this.galleryStateChanged(new EventObject(entity));
+				} 
+				while (entity != null);
+			} 
+			catch (InterruptedException e) {
+				logger.error("Exception occured when getting updated gallery item. ", e);
+			}
+		}}
 	
 	/**
 	 * If this class is static, member variables, such as btnSubmit, are not allowed to refer to. 
@@ -277,7 +303,7 @@ public class MainFrame extends JFrame implements ActionListener, WindowListener,
 							entity.setSeqID(++iRowCount);
 							entity.setUrlLink(strUrlLink.trim());
 							entity.setStatus(GalleryItemConstants.STATUS_NAME_ADDED);
-							operations.putUrlLink(entity);
+							operations.addItem(entity);
 							tableModelUrlLink.addRow(new Object[]{entity.getSeqID(), entity.getUrlLink(), entity.getStatus()});
 							txtFldUrlLink.setText(StringUtils.EMPTY);
 							logger.debug("{} has been put into queue. ", strUrlLink);

@@ -23,15 +23,15 @@ public class GalleryParserRunnable implements ControllableRunnable {
 	
 	private final Logger logger = LoggerFactory.getLogger(GalleryParserRunnable.class);
 	
-	private BlockingQueue<FrameGalleryItemEntity> links;
+	private BlockingQueue<FrameGalleryItemEntity> addedItem;
 	
-	private BlockingQueue<FrameGalleryItemEntity> states;
+	private BlockingQueue<FrameGalleryItemEntity> updatedItem;
 	
 	private GalleryWebsiteConfig confGalleryWebsite;
 	
 	public GalleryParserRunnable(BlockingQueue<FrameGalleryItemEntity> links, BlockingQueue<FrameGalleryItemEntity> states) {
-		this.links = links;
-		this.states = states;
+		this.addedItem = links;
+		this.updatedItem = states;
 	}
 	
 	@Override
@@ -43,16 +43,16 @@ public class GalleryParserRunnable implements ControllableRunnable {
 		initialise();
 		try {
 			while (isRunning) {
-				entity = links.take();
+				entity = addedItem.take();
 				strUrlLink = entity.getUrlLink();
 				logger.info("Start parsing {}. ", strUrlLink);
 				entity.setStatus(GalleryItemConstants.STATUS_NAME_PROCESSING);
-				states.put(entity);
+				updatedItem.put(entity);
 				String strBaseUrl = WebUtils.getBaseUrl(strUrlLink);
 				if (strBaseUrl == null) {
 					logger.error("{} is not a valid website link.", strUrlLink);
 					entity.setStatus(GalleryItemConstants.STATUS_NAME_INVALID);
-					states.put(entity);
+					updatedItem.put(entity);
 					continue;
 				}
 				Class<?> clazzParser = confGalleryWebsite.getPraserClass(strBaseUrl);
@@ -60,7 +60,7 @@ public class GalleryParserRunnable implements ControllableRunnable {
 				if (clazzParser == null || website == null) {
 					logger.error("{} has been not included in gallery.", strUrlLink);
 					entity.setStatus(GalleryItemConstants.STATUS_NAME_NON_INCLUDED);
-					states.put(entity);
+					updatedItem.put(entity);
 					continue;
 				}
 				String strWebPath = strUrlLink.substring(strBaseUrl.length());
@@ -70,7 +70,7 @@ public class GalleryParserRunnable implements ControllableRunnable {
 					DBAccessConnUtils.connect();
 					history = DBAccessConnUtils.getGalleryHistoryByWebPath(strWebPath, website.getId());
 					if (history != null && history.getStatus() == GalleryConstants.PASER_STATUS_COMPLETED) {
-						logger.info("{} downloaded before, {}.", strUrlLink, history.getTitle());
+						logger.info("Previous downloaded {} before, {}.", strUrlLink, history.getTitle());
 						exit = true;
 					}
 					else {
@@ -93,7 +93,7 @@ public class GalleryParserRunnable implements ControllableRunnable {
 				}
 				if (exit) {
 					entity.setStatus(GalleryItemConstants.STATUS_NAME_DOWNLOADED);
-					states.put(entity);
+					updatedItem.put(entity);
 					continue;
 				}
 				
@@ -115,7 +115,7 @@ public class GalleryParserRunnable implements ControllableRunnable {
 				}
 				if (exit) {
 					entity.setStatus(GalleryItemConstants.STATUS_NAME_ERROR);
-					states.put(entity);
+					updatedItem.put(entity);
 					continue;
 				}
 				
@@ -133,8 +133,8 @@ public class GalleryParserRunnable implements ControllableRunnable {
 					DBAccessConnUtils.close();
 				}
 				entity.setStatus("Finish");
-				states.put(entity);
-				logger.info("Finish parsing {}, and {} left in queue. ", strUrlLink, links.size());
+				updatedItem.put(entity);
+				logger.info("Finish parsing {}, and {} left in queue. ", strUrlLink, addedItem.size());
 			}
 		} 
 		catch (InterruptedException e) {

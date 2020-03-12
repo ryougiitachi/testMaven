@@ -159,8 +159,10 @@ public class NineSixxxNetParser implements Parser {
 		String strNextLink = null;
 		String strCurrUrl = this.urlLink;
 		NineSixxxNetPage page = null;
+		int count = 0;
 		
 		Random random = new Random(System.currentTimeMillis());
+		//It is hardly smooth to loop, think do-while block.  
 		File fileTmpHtmlPath = new File(strTmpFilePath);
 		Document document = Jsoup.parse(fileTmpHtmlPath, this.websiteConfig.getCharset());//GBK
 		for(elementsNextPage = document.select(SELECTOR_NEXT_PAGE); 
@@ -170,6 +172,7 @@ public class NineSixxxNetParser implements Parser {
 			strNextLink = WebUtils.getCompleteUrlLink(builder, elementNextPage.attr("href"), this.baseUrl, strCurrUrl);
 			strTmpFilePath = GalleryUtils.loadHtmlByURL(strNextLink, headers);
 			fileTmpHtmlPath = new File(strTmpFilePath);
+			logger.info("Downloaded html file {}", fileTmpHtmlPath.getName());
 			document = Jsoup.parse(fileTmpHtmlPath, this.websiteConfig.getCharset());
 			strCurrUrl = strNextLink;
 			page = new NineSixxxNetPage();
@@ -178,8 +181,9 @@ public class NineSixxxNetParser implements Parser {
 			tmpFilePaths.add(page);
 			//anti-prohibit
 			antiProhibitForHtml(random);
+			++count;
 		}
-		logger.info("Finish downloading html files.");
+		logger.info("Finish downloading {} html files.", count);
 	}
 	
 	/**

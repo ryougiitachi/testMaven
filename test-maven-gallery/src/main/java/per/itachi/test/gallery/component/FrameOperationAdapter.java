@@ -15,47 +15,47 @@ import org.springframework.stereotype.Component;
 
 import per.itachi.test.gallery.entity.FrameGalleryItemEntity;
 import per.itachi.test.gallery.thread.ControllableRunnable;
-import per.itachi.test.gallery.thread.GalleryItemStateRunnable;
 import per.itachi.test.gallery.thread.GalleryParserRunnable;
-import per.itachi.test.gallery.window.GalleryParserListener;
 
 @Component
 public class FrameOperationAdapter {
 	
 	private final Logger logger = LoggerFactory.getLogger(FrameOperationAdapter.class);
 	
-	private BlockingQueue<FrameGalleryItemEntity> links;
+	private BlockingQueue<FrameGalleryItemEntity> addedItems;
+	
+	private BlockingQueue<FrameGalleryItemEntity> updatedItems;
 	
 	private List<ControllableRunnable> runnables;
 	
 	private ExecutorService executorService;
 	
-	private GalleryParserListener galleryParserListener;
-	
 	@PostConstruct
 	private void init() {
 		logger.info("Initialising blocking queues... ");
-		BlockingQueue<FrameGalleryItemEntity> queueUrlLink = new LinkedBlockingQueue<>();
-		BlockingQueue<FrameGalleryItemEntity> queueStateChanged = new LinkedBlockingQueue<>();
+		BlockingQueue<FrameGalleryItemEntity> queueAddedItems = new LinkedBlockingQueue<>();
+		BlockingQueue<FrameGalleryItemEntity> queueUpdatedItems = new LinkedBlockingQueue<>();
 		logger.info("blocking queues have been ready. ");
 		logger.info("Initialising relevant threads... ");
-		ControllableRunnable runnableParser = new GalleryParserRunnable(queueUrlLink, queueStateChanged);
-		ControllableRunnable runnableState = new GalleryItemStateRunnable(galleryParserListener, queueStateChanged);
+		ControllableRunnable runnableParser = new GalleryParserRunnable(queueAddedItems, queueUpdatedItems);
 		ExecutorService executorService = Executors.newFixedThreadPool(2);
 		executorService.execute(runnableParser);
-		executorService.execute(runnableState);
 		List<ControllableRunnable> listRunnables = new ArrayList<>();
 		listRunnables.add(runnableParser);
-		listRunnables.add(runnableState);
-		this.links = queueUrlLink;
+		this.addedItems = queueAddedItems;
+		this.updatedItems = queueUpdatedItems;
 		this.runnables = listRunnables;
 		this.executorService = executorService;
 		logger.info("relevant threads have been ready. ");
 		
 	}
 	
-	public void putUrlLink(FrameGalleryItemEntity entity) throws InterruptedException {
-		links.put(entity);
+	public void addItem(FrameGalleryItemEntity entity) throws InterruptedException {
+		addedItems.put(entity);
+	}
+	
+	public FrameGalleryItemEntity getUpdatedItem() throws InterruptedException  {
+		return updatedItems.take();
 	}
 	
 	public void shutdownControllableRunnable() {
@@ -68,19 +68,11 @@ public class FrameOperationAdapter {
 		executorService.shutdown();
 	}
 	
-	public void setLinks(BlockingQueue<FrameGalleryItemEntity> links) {
-		this.links = links;
-	}
-	
 	public void setControllableRunnable(List<ControllableRunnable> runnables) {
 		this.runnables = runnables;
 	}
 	
 	public void setExecutorService(ExecutorService executorService) {
 		this.executorService = executorService;
-	}
-
-	public void setGalleryParserListener(GalleryParserListener galleryParserListener) {
-		this.galleryParserListener = galleryParserListener;
 	}
 }
