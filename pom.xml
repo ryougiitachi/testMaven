@@ -50,6 +50,9 @@
 		<jasypt.version>1.9.2</jasypt.version>
 		<pinyin4j.version>2.5.1</pinyin4j.version>
 		<alibaba.fastjson.version>1.2.58</alibaba.fastjson.version>
+		<mybatis.version>3.5.3</mybatis.version>
+		<mybatis.spring.version>2.0.3</mybatis.spring.version>
+		<hikari.version>2.1.0</hikari.version>
 	</properties>
 	
 	<modules>
@@ -309,6 +312,23 @@
 				<groupId>com.alibaba</groupId>
 				<artifactId>fastjson</artifactId>
 				<version>${alibaba.fastjson.version}</version>
+			</dependency>
+			<!-- mybatis -->
+			<dependency>
+				<groupId>org.mybatis</groupId>
+				<artifactId>mybatis</artifactId>
+				<version>${mybatis.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.mybatis</groupId>
+				<artifactId>mybatis-spring</artifactId>
+				<version>${mybatis.spring.version}</version>
+			</dependency>
+			<!-- hikari -->
+			<dependency>
+				<groupId>hikari-cp</groupId>
+				<artifactId>hikari-cp</artifactId>
+				<version>${hikari.version}</version>
 			</dependency>
 		</dependencies>
 	</dependencyManagement>
