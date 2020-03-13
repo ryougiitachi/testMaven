@@ -24,6 +24,13 @@ public class WebUtils {
 		return Pattern.matches(REGEX_WEBSITE_LINK, urlPath);
 	}
 	
+	/**
+	 * @param builder	
+	 * @param urlPath	
+	 * @param baseUrl	
+	 * @param currUrl	may be used in the 3rd branch. 
+	 * @return complete url link, eg, https://www.example/html.html
+	 * */
 	public static String getCompleteUrlLink(StringBuilder builder, String urlPath, String baseUrl, String currUrl) {
 		if (isCompleteUrlLink(urlPath)) {// absolute url - complete website address 
 			return urlPath;

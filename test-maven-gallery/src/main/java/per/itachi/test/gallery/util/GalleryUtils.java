@@ -26,9 +26,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import per.itachi.test.gallery.GalleryConstants;
-import per.itachi.test.gallery.entity.GalleryHistory;
 import per.itachi.test.gallery.entity.WebsiteAddress;
 import per.itachi.test.gallery.persist.DBConstants;
+import per.itachi.test.gallery.persist.entity.GalleryHistory;
 
 public class GalleryUtils {
 	

@@ -72,25 +72,18 @@ public class NineSixxxNetParser implements Parser {
 		String strUrlLink = this.urlLink;
 		logger.info("Start parsing NineSixxxNet URL {}", strUrlLink);
 		Map<String, String> mapHeaders = GalleryUtils.getDefaultRequestHeaders();
-		String strTmpHtmlPath = GalleryUtils.loadHtmlByURL(strUrlLink, mapHeaders);//TODO: reconstruction
-		List<NineSixxxNetPage> listTmpHtmlPath = new ArrayList<>();
-		List<String> listImageLink = new ArrayList<>();
+		List<NineSixxxNetPage> listPageInfo = new ArrayList<>();
 		String strPicDirPath = null;
-		NineSixxxNetPage page = null;
 		try {
-			page = new NineSixxxNetPage();
-			page.setCurrUrlLink(strUrlLink);
-			page.setTmpFilePath(strTmpHtmlPath);
-			listTmpHtmlPath.add(page);
-			strPicDirPath = generatePicDirectory(strTmpHtmlPath);
+			loadPageInfoList(strUrlLink, listPageInfo, mapHeaders);// download html files 
+			strPicDirPath = generatePicDirectory(listPageInfo.get(0).getTmpFilePath());//Given list of html is not null. 
 			if (strPicDirPath != null) {
-				loadTmpHtmlList(strTmpHtmlPath, listTmpHtmlPath, mapHeaders);// download html TODO: reconstruction
-				loadImageLinkList(listTmpHtmlPath, listImageLink);// load image links
-				downloadImages(listImageLink, mapHeaders, strPicDirPath);//download imagaes
+//				loadImageLinkList(listTmpHtmlPath, listImageLink);// load image links
+				downloadImages(listPageInfo, mapHeaders, strPicDirPath);//download imagaes
 			}
 		} 
 		catch (IOException e) {
-			logger.error("Error occured when downloading pictures from {}. ", strTmpHtmlPath, e);
+			logger.error("Error occured when downloading pictures from {}. ", strUrlLink, e);
 		}
 		logger.info("Finish parsing {}", strUrlLink);
 	}
@@ -104,6 +97,7 @@ public class NineSixxxNetParser implements Parser {
 		Document document = Jsoup.parse(fileTmpHtmlPath, this.websiteConfig.getCharset());//GBK
 		Element elementTitle = document.selectFirst(SELECTOR_TITLE);
 		String strTitle = this.title = elementTitle.text();
+		logger.info("The title is {}. ", strTitle);
 		String strPicDirPath = GalleryUtils.joinStrings(builder, 
 				GalleryConstants.DEFAULT_PICTURE_PATH, File.separator, getDateString(), 
 				strTitle, File.separator);
@@ -150,41 +144,49 @@ public class NineSixxxNetParser implements Parser {
 		}
 	}
 	
-	private void loadTmpHtmlList(String initTmpHtmlPath, List<NineSixxxNetPage> tmpFilePaths, Map<String, String> headers) throws IOException {
-		logger.info("Start downloading html files.");
+	private void loadPageInfoList(String urlLink, List<NineSixxxNetPage> htmlFilePaths, Map<String, String> headers) throws IOException {
+		logger.info("Start downloading html files from {}.", urlLink);
 		StringBuilder builder = new StringBuilder();
+		int countHtml = 0;
+		Document document = null;
+		String strCurrUrlLink = urlLink;
+		String strCurrHtmlPath = null;
+		List<String> listImageCompleteUrlPerPage = null;
+		NineSixxxNetPage pageInfo = null;
+		File fileHtml = null;
+		Elements elementsImg = null;
 		Elements elementsNextPage = null;
-		Element elementNextPage = null;
-		String strTmpFilePath = initTmpHtmlPath;
-		String strNextLink = null;
-		String strCurrUrl = this.urlLink;
-		NineSixxxNetPage page = null;
-		int count = 0;
 		
 		Random random = new Random(System.currentTimeMillis());
-		//It is hardly smooth to loop, think do-while block.  
-		File fileTmpHtmlPath = new File(strTmpFilePath);
-		Document document;//GBK
-		document = Jsoup.parse(fileTmpHtmlPath, this.websiteConfig.getCharset());//GBK
-		for(elementsNextPage = document.select(SELECTOR_NEXT_PAGE); 
-				elementsNextPage.size() > 0;
-				elementsNextPage = document.select(SELECTOR_NEXT_PAGE)) {
-			elementNextPage = elementsNextPage.first();
-			strNextLink = WebUtils.getCompleteUrlLink(builder, elementNextPage.attr(GalleryConstants.HTML_ATTR_A_HREF), this.baseUrl, strCurrUrl);
-			strTmpFilePath = GalleryUtils.loadHtmlByURL(strNextLink, headers);
-			fileTmpHtmlPath = new File(strTmpFilePath);
-			logger.info("Downloaded html file {}", fileTmpHtmlPath.getName());
-			document = Jsoup.parse(fileTmpHtmlPath, this.websiteConfig.getCharset());
-			strCurrUrl = strNextLink;
-			page = new NineSixxxNetPage();
-			page.setCurrUrlLink(strCurrUrl);
-			page.setTmpFilePath(strTmpFilePath);
-			tmpFilePaths.add(page);
+		do {
+			strCurrHtmlPath = GalleryUtils.loadHtmlByURL(strCurrUrlLink, headers);
+			fileHtml = new File(strCurrHtmlPath);
+			document = Jsoup.parse(fileHtml, this.websiteConfig.getCharset());//GBK
+			// load image url 
+			listImageCompleteUrlPerPage = new ArrayList<>();
+			elementsImg = document.select(SELECTOR_IMG);
+			for (Element elementImg : elementsImg) {
+				listImageCompleteUrlPerPage.add(WebUtils.getCompleteUrlLink(builder, elementImg.attr(GalleryConstants.HTML_ATTR_IMG_SRC), this.baseUrl, strCurrHtmlPath));
+			}
+			//put page info into NineSixxxNetPage 
+			pageInfo = new NineSixxxNetPage();
+			pageInfo.setCurrUrlLink(strCurrUrlLink);
+			pageInfo.setTmpFilePath(strCurrHtmlPath);
+			pageInfo.setImageCompleteUrlList(listImageCompleteUrlPerPage);
+			htmlFilePaths.add(pageInfo);
+			++countHtml;
+			logger.info("Downloaded html file {}", fileHtml.getName());
+			//for next page
+			elementsNextPage = document.select(SELECTOR_NEXT_PAGE);
+			if (!elementsNextPage.isEmpty()) {
+				//for next page
+				strCurrUrlLink = WebUtils.getCompleteUrlLink(builder, elementsNextPage.first().attr(GalleryConstants.HTML_ATTR_A_HREF), this.baseUrl, strCurrUrlLink);
+			}
 			//anti-prohibit
 			antiProhibitForHtml(random);
-			++count;
-		}
-		logger.info("Finish downloading {} html files.", count);
+		} 
+		while (!elementsNextPage.isEmpty());//redundant
+		logger.info("Finish downloading {} html files from {}.", countHtml, urlLink);
 	}
 	
 	/**
@@ -201,45 +203,36 @@ public class NineSixxxNetParser implements Parser {
 		}
 	}
 	
-	private void loadImageLinkList(List<NineSixxxNetPage> tmpFilePaths, List<String> imageLinks) throws IOException {
-		logger.info("Start filling list of image link.");
+	private void downloadImages(List<NineSixxxNetPage> pageInfos, Map<String, String> headers, String picPath) {
+		logger.info("Start downloading images.");
 		StringBuilder builder = new StringBuilder();
-		File fileTmpHtmlPath = null;
-		Document document = null;
-		Elements elementsImg = null;
-		for (NineSixxxNetPage page : tmpFilePaths) {
-			fileTmpHtmlPath = new File(page.getTmpFilePath());
-			document = Jsoup.parse(fileTmpHtmlPath, this.websiteConfig.getCharset());
-			elementsImg = document.select(SELECTOR_IMG);
-			for (Element elementImg : elementsImg) {
-				imageLinks.add(WebUtils.getCompleteUrlLink(builder, elementImg.attr("src"), this.baseUrl, page.getCurrUrlLink()));
+		List<String> listImageCompleteUrl = new ArrayList<>(100);
+		for (NineSixxxNetPage page : pageInfos) {
+			for (String strImageCompleteUrl : page.getImageCompleteUrlList()) {
+				listImageCompleteUrl.add(strImageCompleteUrl);
 			}
 		}
-		logger.info("Finish filling list of image link.");
-	}
-	
-	private void downloadImages(List<String> imageLinks, Map<String, String> headers, String picPath) {
-		logger.info("Start downloading images.");
 		int i = 0;
-		StringBuilder builder = new StringBuilder();
-		byte[] buffer = new byte[8192];
+		byte[] buffer = new byte[GalleryConstants.DEFAULT_BUFFER_BYTE_SIZE];
+		Random random = new Random(System.currentTimeMillis());
 		File fileImg = null;
 		String strImgPath = null;
 		String strFixedPath = null;
-		Random random = new Random(System.currentTimeMillis());
-		for (String strImgLink : imageLinks) {
+		for (String strImgLink : listImageCompleteUrl) {
 			// download it and than rename it. 
 			++i;
 			strImgPath = GalleryUtils.loadFileByURL(strImgLink, headers, buffer, picPath, builder);
 			fileImg = new File(strImgPath);
 			strFixedPath = String.format("%s%05d-%s", picPath, i, fileImg.getName());
 			fileImg.renameTo(new File(strFixedPath));
-			logger.info("{}/{} image files have been downloaded.", i, imageLinks.size());
+			logger.info("{}/{} image files have been downloaded.", i, listImageCompleteUrl.size());
 			//anti-prohibit
 			antiProhibitForPic(random);
 		}
+
 		logger.info("Finish downloading images.");
 	}
+	
 	
 	/**
 	 * avoid website forbidding to parsing. 

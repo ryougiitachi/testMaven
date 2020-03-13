@@ -1,4 +1,4 @@
-package per.itachi.test.gallery.entity;
+package per.itachi.test.gallery.persist.entity;
 
 import java.util.Date;
 

@@ -9,9 +9,9 @@ import org.slf4j.LoggerFactory;
 
 import per.itachi.test.gallery.conf.GalleryWebsite;
 import per.itachi.test.gallery.conf.GalleryWebsiteConfig;
-import per.itachi.test.gallery.entity.GalleryHistory;
 import per.itachi.test.gallery.parser.Parser;
 import per.itachi.test.gallery.persist.DBAccessConnUtils;
+import per.itachi.test.gallery.persist.entity.GalleryHistory;
 import per.itachi.test.gallery.util.GalleryUtils;
 import per.itachi.test.gallery.util.WebUtils;
 
