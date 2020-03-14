@@ -1,10 +1,12 @@
 package per.itachi.test.gallery;
 
+import java.io.IOException;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.xml.sax.SAXException;
 
 import per.itachi.test.gallery.conf.GalleryWebsite;
 import per.itachi.test.gallery.conf.GalleryWebsiteConfig;
@@ -22,7 +24,13 @@ public class EntryPosts {
 			logger.info("No argument found");
 			return;
 		}
-		initialise();
+		try {
+			initialise();
+		} 
+		catch (ClassNotFoundException | IOException | SAXException e) {
+			logger.error("Error occured when initialising configuration. ", e);
+			return;
+		}
 		String strUrlLink = args[0];
 		String strBaseUrl = WebUtils.getBaseUrl(strUrlLink);
 		if (strBaseUrl == null) {
@@ -59,8 +67,10 @@ public class EntryPosts {
 		}
 	}
 	
-	private static void initialise() {
-		confGalleryWebsite = GalleryWebsiteConfig.load(GalleryConstants.DEFAULT_WEBSITE_CONF_PATH);
+	private static void initialise() throws ClassNotFoundException, IOException, SAXException {
+		confGalleryWebsite = new GalleryWebsiteConfig();
+		confGalleryWebsite.setFilePath(GalleryConstants.DEFAULT_WEBSITE_CONF_PATH);
+		confGalleryWebsite.init();
 	}
 
 	private static Parser instantiateNewParser(Class<?> clazzParser, String link) 

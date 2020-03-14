@@ -12,6 +12,8 @@ import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import javax.annotation.PostConstruct;
+
 import org.apache.commons.digester3.Digester;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -23,18 +25,23 @@ public class GalleryWebsiteConfig {
 	
 	private static final Logger logger = LoggerFactory.getLogger(GalleryWebsiteConfig.class);
 	
+	private String filePath;
+	
 	private List<HttpHeader> globalHttpHeaders;
 	
 	private Map<String, Class<?>> mapUrlToClass;
 	
 	private Map<String, GalleryWebsite> mapUrlToWebsite;
 	
-	public static GalleryWebsiteConfig load(String path) {
-		File file = new File(path);
-		if (!file.exists()) {
-			logger.error("The configuration file {} doesn't exist.", path);
-			return null;
-		}
+	public GalleryWebsiteConfig() {
+		globalHttpHeaders = new ArrayList<>();
+		mapUrlToClass = new HashMap<>();
+		mapUrlToWebsite = new HashMap<>();
+	}
+	
+	@PostConstruct
+	public void init() throws IOException, SAXException, ClassNotFoundException {
+		//initialise digester paths. 
 		Digester digester = new Digester();
 		digester.setValidating(false);
 		digester.addObjectCreate("websites", GalleryWebsites.class);
@@ -58,25 +65,22 @@ public class GalleryWebsiteConfig {
 		digester.addCallParam("websites/website/domains/value", 0);
 		digester.addSetNext("websites/website/domains", "setDomains");
 		digester.addSetNext("websites/website", "addGalleryWebsite");
-		
+		//read configuration file data stream. 
+		File file = new File(filePath);
 		GalleryWebsites websites = null;
 		try(InputStream fis = new FileInputStream(file)) {
 			websites = digester.<GalleryWebsites>parse(fis);
 		} 
 		catch (IOException | SAXException e) {
-			logger.error("Error occurs when reading {}", path, e);
+			logger.error("Error occurs when reading {}", filePath, e);
+			throw e;
 		}
-		if (websites == null) {
-			return null;
-		}
-		
-		GalleryWebsiteConfig config = new GalleryWebsiteConfig();
 		// websites/global-http-headers 
 		HttpHeader httpHeader = null;
 		Iterator<HttpHeader> iteratorHttpHeader = websites.iterateGlobalHttpHeader();
 		while (iteratorHttpHeader.hasNext()) {
 			httpHeader = iteratorHttpHeader.next();
-			config.globalHttpHeaders.add(httpHeader);
+			this.globalHttpHeaders.add(httpHeader);
 		}
 		// websites/website 
 		GalleryWebsite website = null;
@@ -96,11 +100,11 @@ public class GalleryWebsiteConfig {
 					matcherBaseUrl = patternBaseUrl.matcher(strDomain);
 					if (matcherBaseUrl.matches()) {
 						strDomain = matcherBaseUrl.group(1);
-						if (config.mapUrlToClass.get(strDomain) == null) {
-							config.mapUrlToClass.put(strDomain, clazzParser);
+						if (this.mapUrlToClass.get(strDomain) == null) {
+							this.mapUrlToClass.put(strDomain, clazzParser);
 						}//conf.mapUrlToClass.get(strDomain) == null
-						if (config.mapUrlToWebsite.get(strDomain) == null) {
-							config.mapUrlToWebsite.put(strDomain, website);
+						if (this.mapUrlToWebsite.get(strDomain) == null) {
+							this.mapUrlToWebsite.put(strDomain, website);
 						}
 					}//matcherBaseUrl.matches()
 				}//iteratorDomain.hasNext()
@@ -108,16 +112,18 @@ public class GalleryWebsiteConfig {
 		} 
 		catch (ClassNotFoundException e) {
 			logger.error("Error occurs when initialising configurations about webistes.", e);
+			throw e;
 		}
-		return config;
 	}
 	
-	private GalleryWebsiteConfig() {
-		globalHttpHeaders = new ArrayList<>();
-		mapUrlToClass = new HashMap<>();
-		mapUrlToWebsite = new HashMap<>();
+	public String getFilePath() {
+		return filePath;
 	}
-	
+
+	public void setFilePath(String filePath) {
+		this.filePath = filePath;
+	}
+
 	public List<HttpHeader> getGlobalHttpHeaders() {
 		return globalHttpHeaders;
 	}
@@ -130,17 +136,14 @@ public class GalleryWebsiteConfig {
 		return mapUrlToWebsite.get(domain);
 	}
 	
-	public static void main(String[] args) {
+	public static void main(String[] args) throws ClassNotFoundException, IOException, SAXException {
 		if (args.length <= 0) {
 			logger.info("No conf found.");
 			return;
 		}
-		GalleryWebsiteConfig config = load(args[0]);
-		if (config == null) {
-			logger.error("error");
-		}
-		else {
-			logger.info("Global HTTP Header is {}. ", config.globalHttpHeaders);
-		}
+		GalleryWebsiteConfig config = new GalleryWebsiteConfig();
+		config.setFilePath(args[0]);
+		config.init();
+		logger.info("Global HTTP Header is {}. ", config.globalHttpHeaders);
 	}
 }

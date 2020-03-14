@@ -7,6 +7,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 
+import javax.annotation.PostConstruct;
 import javax.sql.DataSource;
 
 import org.slf4j.Logger;
@@ -38,6 +39,11 @@ public class DBAccessRepository {
 			"UPDATE T_GALLERY_HISTORY SET STATUS = ?, EDITOR = ?, EDATE = ? WHERE WEB_PATH = ? AND WEBSITE_ID = ?";
 	
 	private final Logger logger =LoggerFactory.getLogger(DBAccessRepository.class);
+	
+	@PostConstruct
+	private void init() {
+		logger.info("Completed DBAccessRepository initialisation. ");
+	}
 	
 	@Autowired
 	private DataSource hikariDataSource;

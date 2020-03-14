@@ -8,6 +8,10 @@
 				http://www.springframework.org/schema/context
 				http://www.springframework.org/schema/context/spring-context.xsd">
 	
+	<bean id="galleryWebsiteConfig" class="per.itachi.test.gallery.conf.GalleryWebsiteConfig" autowire="byName">
+		<property name="filePath" value="conf/websites.xml"/>
+	</bean>
+	
 	<bean id="addedItems" class="java.util.concurrent.LinkedBlockingQueue" autowire="byName"/>
 	
 	<bean id="updatedItems" class="java.util.concurrent.LinkedBlockingQueue" autowire="byName"/>

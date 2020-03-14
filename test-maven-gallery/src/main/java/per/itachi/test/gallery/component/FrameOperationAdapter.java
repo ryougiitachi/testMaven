@@ -31,6 +31,9 @@ public class FrameOperationAdapter {
 	@Qualifier("updatedItems")//it is required
 	private BlockingQueue<FrameGalleryItemEntity> updatedItems;
 	
+	@Autowired
+	private GalleryParserProcessor galleryParserProcessor;
+	
 	private List<ControllableRunnable> runnables;
 	
 	private ExecutorService executorService;
@@ -40,7 +43,7 @@ public class FrameOperationAdapter {
 		logger.info("Initialising blocking queues... ");
 		logger.info("blocking queues have been ready. ");
 		logger.info("Initialising relevant threads... ");
-		ControllableRunnable runnableParser = new GalleryParserRunnable(this.addedItems, this.updatedItems);
+		ControllableRunnable runnableParser = new GalleryParserRunnable(this.addedItems, this.updatedItems, this.galleryParserProcessor);
 		ExecutorService executorService = Executors.newFixedThreadPool(2);
 		executorService.execute(runnableParser);
 		List<ControllableRunnable> listRunnables = new ArrayList<>();
