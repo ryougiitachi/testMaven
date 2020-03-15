@@ -18,7 +18,7 @@
 	
 	<bean id="hikariDataSource" class="com.zaxxer.hikari.HikariDataSource" autowire="byName" destroy-method="close">
 		<property name="jdbcUrl" value="jdbc:ucanaccess://data/gallery.accdb"/>
-		<property name="dataSourceClassName" value="net.ucanaccess.jdbc.UcanaccessDriver"/>
+		<property name="driverClassName" value="net.ucanaccess.jdbc.UcanaccessDriver"/>
 		<property name="minimumIdle" value="1"/>
 		<property name="maximumPoolSize" value="1"/>
 		<property name="autoCommit" value="false"/>
@@ -30,6 +30,9 @@
 				<entry key="jackcessOpener" value="per.itachi.test.gallery.persist.GalleryJackcessOpener"/>
 			</map>
 		</property>
+	</bean>
+	
+	<bean id="dbAccessRepository" class="per.itachi.test.gallery.persist.DBAccessRepository" autowire="byName">
 	</bean>
 
 	<context:component-scan use-default-filters="false" 

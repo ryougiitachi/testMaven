@@ -18,6 +18,7 @@ import per.itachi.test.gallery.conf.GalleryWebsiteConfig;
 import per.itachi.test.gallery.entity.FrameGalleryItemEntity;
 import per.itachi.test.gallery.parser.Parser;
 import per.itachi.test.gallery.persist.DBAccessConnUtils;
+import per.itachi.test.gallery.persist.DBAccessRepository;
 import per.itachi.test.gallery.persist.entity.GalleryHistory;
 import per.itachi.test.gallery.util.GalleryUtils;
 import per.itachi.test.gallery.util.WebUtils;
@@ -29,6 +30,9 @@ public class GalleryParserProcessor {
 	
 	@Autowired
 	private GalleryWebsiteConfig confGalleryWebsite;
+	
+	@Autowired
+	private DBAccessRepository dbAccessRepository;
 
 	@PostConstruct
 	private void init() {
@@ -54,8 +58,7 @@ public class GalleryParserProcessor {
 		boolean exit = false;
 		GalleryHistory history = null;
 		try {
-			DBAccessConnUtils.connect();
-			history = DBAccessConnUtils.getGalleryHistoryByWebPath(strWebPath, website.getId());
+			history = dbAccessRepository.getGalleryHistoryByWebPath(strWebPath, website.getId());
 			if (history != null && history.getStatus() == GalleryConstants.PASER_STATUS_COMPLETED) {
 				logger.info("Previously downloaded {} before, {}.", strUrlLink, history.getTitle());
 				exit = true;
@@ -63,20 +66,17 @@ public class GalleryParserProcessor {
 			else {
 				if (history == null) {
 					history = GalleryUtils.getNewGalleryHistory(strBaseUrl, strWebPath, website.getId());
-					DBAccessConnUtils.insertGalleryHistory(history);
+					dbAccessRepository.insertGalleryHistory(history);
 				}
 				history.setStatus(GalleryConstants.PASER_STATUS_PROCESSING);
-				DBAccessConnUtils.updateGalleryHistoryByID(history);
+				dbAccessRepository.updateGalleryHistoryByID(history);
 				logger.info("Added {} to history record, and start download it.", strUrlLink);
 				exit = false;
 			}
 		} 
-		catch (ClassNotFoundException | SQLException e) {
+		catch (SQLException e) {
 			logger.error("Error occurs when checking history record {}. ", strUrlLink, e);
 			exit = true;
-		}
-		finally {
-			DBAccessConnUtils.close();
 		}
 		if (exit) {
 			entity.setStatus(GalleryItemConstants.STATUS_NAME_DOWNLOADED);
@@ -105,17 +105,13 @@ public class GalleryParserProcessor {
 		}
 		
 		try {
-			DBAccessConnUtils.connect();
 			history.setTitle(parser.getTitle());
 			history.setStatus(GalleryConstants.PASER_STATUS_COMPLETED);
-			DBAccessConnUtils.updateGalleryHistoryByID(history);
+			dbAccessRepository.updateGalleryHistoryByID(history);
 			logger.info("Completed downloading {}, {}", strUrlLink, history.getTitle());
 		} 
-		catch (ClassNotFoundException | SQLException e) {
+		catch (SQLException e) {
 			logger.error("Error occurs when updating history record {}. ", strUrlLink, e);
-		}
-		finally {
-			DBAccessConnUtils.close();
 		}
 		entity.setStatus(GalleryItemConstants.STATUS_NAME_FINISH);
 	}

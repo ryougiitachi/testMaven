@@ -124,6 +124,7 @@ public class DBAccessRepository {
 				id = -1;
 			}
 			rs.close();
+			connection.commit();
 			history.setId(id);
 			return id;
 		}
@@ -140,6 +141,7 @@ public class DBAccessRepository {
 			statement.setDate(paramIndex++, dateTime);
 			statement.setInt(paramIndex++, history.getId());
 			int iResult = statement.executeUpdate();
+			connection.commit();
 			return iResult;
 		}
 	}
@@ -154,6 +156,7 @@ public class DBAccessRepository {
 			statement.setDate(paramIndex++, dateTime);
 			statement.setString(paramIndex++, history.getGalleryLink());
 			int iResult = statement.executeUpdate();
+			connection.commit();
 			return iResult;
 			
 		}
@@ -170,6 +173,7 @@ public class DBAccessRepository {
 			statement.setString(paramIndex++, history.getWebPath());
 			statement.setInt(paramIndex++, history.getWebsiteID());
 			int iResult = statement.executeUpdate();
+			connection.commit();
 			return iResult;
 		}
 	}
