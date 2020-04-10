@@ -243,6 +243,14 @@
 				<artifactId>spring-kafka</artifactId>
 				<version>${spring.kafka.version}</version>
 			</dependency>
+			<!-- spring boot -->
+			<dependency>
+				<groupId>org.springframework.boot</groupId>
+				<artifactId>spring-boot-dependencies</artifactId>
+				<version>${spring.boot.version}</version>
+				<type>pom</type>
+				<scope>import</scope><!-- This is the key of creating a spring boot project without spring-boot-starter-parent as parent. -->
+			</dependency>
 			<!-- struts -->
 			<dependency>
 				<groupId>org.apache.struts</groupId>
@@ -280,14 +288,6 @@
 				<groupId>org.freemarker</groupId>
 				<artifactId>freemarker</artifactId>
 				<version>${apache.freemarker.version}</version>
-			</dependency>
-			<!-- spring boot -->
-			<dependency>
-				<groupId>org.springframework.boot</groupId>
-				<artifactId>spring-boot-dependencies</artifactId>
-				<version>${spring.boot.version}</version>
-				<type>pom</type>
-				<scope>import</scope><!-- This is the key of creating a spring boot project without spring-boot-starter-parent as parent. -->
 			</dependency>
 			<!-- netty -->
 			<dependency>
