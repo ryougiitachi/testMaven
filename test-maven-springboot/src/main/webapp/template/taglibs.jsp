@@ -7,3 +7,6 @@
 <c:set var="ctx" value="${pageContext.request.contextPath}"/>
 <c:set var="servlet" value="${pageContext.request.servletPath}"/>
 <!-- This page is ${pageContext.request.requestURI}.  -->
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" 
+		"http://www.w3.org/TR/html4/loose.dtd">

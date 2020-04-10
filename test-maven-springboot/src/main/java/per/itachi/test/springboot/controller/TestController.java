@@ -1,7 +1,11 @@
 package per.itachi.test.springboot.controller;
 
+import javax.annotation.PostConstruct;
+import javax.servlet.Filter;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -12,6 +16,14 @@ import org.springframework.web.bind.annotation.ResponseBody;
 public class TestController {
 	
 	private final Logger logger = LoggerFactory.getLogger(TestController.class);
+	
+	@Autowired
+	private Filter springSecurityFilterChain;
+	
+	@PostConstruct
+	public void init() {
+		logger.info("springSecurityFilterChain is {}. ", springSecurityFilterChain);
+	}
 	
 	/**
 	 * RequestMapping的path如果是/开头可以无视Controller中的value？当然不是这样，之前把controller给当成RequestMapping；

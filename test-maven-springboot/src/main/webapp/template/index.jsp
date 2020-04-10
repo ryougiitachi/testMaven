@@ -1,4 +1,9 @@
+
 <html>
+	<head>
+		<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+		<title>Home Page</title>
+	</head>
 	<body>
 		<h2>Hello World!</h2>
 		<form method="POST" enctype="multipart/form-data" action="/springboot/mvc/upload"> 
