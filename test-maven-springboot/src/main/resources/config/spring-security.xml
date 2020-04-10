@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- 
+		These .xsd files are usually placed in spring-security-config-[version].jar, 
+		in the path of org.springframework.security.config/*.xsd. 
+		spring-security-config-[version].jar/META-INF stores mapping relationship between xsi:schemaLocation and .xsd files. 
+ -->
+<beans xmlns="http://www.springframework.org/schema/beans"
+			xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+			xmlns:security="http://www.springframework.org/schema/security" 
+			xmlns:p="http://www.springframework.org/schema/p"
+			xsi:schemaLocation="
+					http://www.springframework.org/schema/beans 
+					http://www.springframework.org/schema/beans/spring-beans.xsd
+					http://www.springframework.org/schema/security 
+					http://www.springframework.org/schema/security/spring-security.xsd">
+	
+	<security:http>
+		<security:custom-filter ref="" before="FIRST" />
+	</security:http>
+	<security:csrf disabled="true" />
+
+</beans>
