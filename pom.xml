@@ -50,7 +50,7 @@
 		<jasypt.version>1.9.2</jasypt.version>
 		<pinyin4j.version>2.5.1</pinyin4j.version>
 		<alibaba.fastjson.version>1.2.58</alibaba.fastjson.version>
-		<mybatis.version>3.5.3</mybatis.version>
+		<mybatis.version>3.5.6</mybatis.version>
 		<mybatis.spring.version>2.0.3</mybatis.spring.version>
 		<hikari.version>2.1.0</hikari.version>
 	</properties>
