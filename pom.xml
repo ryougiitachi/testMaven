@@ -25,7 +25,7 @@
 		<!-- library -->
 		<slf4j.version>1.7.25</slf4j.version>
 		<logback.version>1.2.3</logback.version>
-		<jsoup.version>1.11.2</jsoup.version>
+		<jsoup.version>1.14.2</jsoup.version>
 		<javax.version>7.0</javax.version>
 		<javax.jstl.version>1.2</javax.jstl.version>
 		<javax.servlet-api.version>3.1.0</javax.servlet-api.version>
