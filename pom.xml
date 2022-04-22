@@ -37,7 +37,7 @@
 		<apache.poi.version>3.17</apache.poi.version>
 		<apache.digester.version>3.2</apache.digester.version>
 		<apache.struts1.version>1.3.10</apache.struts1.version>
-		<apache.struts2.version>2.5.16</apache.struts2.version>
+		<apache.struts2.version>2.5.30</apache.struts2.version>
 		<apache.freemarker.version>2.3.28</apache.freemarker.version>
 		<apache.zookeeper.version>3.5.5</apache.zookeeper.version>
 		<apache.curator.version>4.2.0</apache.curator.version>
